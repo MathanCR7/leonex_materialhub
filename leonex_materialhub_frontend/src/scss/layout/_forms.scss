@@ -1,0 +1,242 @@
+// src/scss/layout/_forms.scss
+@use "sass:math";
+@use "sass:color";
+@use "../utils/variables" as var;
+@use "../utils/mixins" as mix;
+
+.form-group {
+  margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg
+  position: relative; // For potential floating labels or icons later
+}
+
+label {
+  display: block;
+  font-size: 0.9rem; // Slightly smaller label
+  font-weight: var.$font-weight-medium;
+  color: var.$text-secondary;
+  margin-bottom: var.$spacer-2; // Corrected: Was var.$spacer-sm
+  transition: color var.$transition-duration-short;
+  // For better accessibility, associate with input via htmlFor="inputId"
+}
+
+// Common styles for various input types, textarea, and select
+.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  display: block;
+  width: 100%;
+  // Padding: top/bottom uses 'md' (1rem), left/right uses 'md' + 'xs' (1rem + 0.25rem = 1.25rem)
+  padding: var.$spacer-3 calc(var.$spacer-3 + var.$spacer-1); // Corrected: md, md+xs
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: var.$font-weight-regular;
+  line-height: var.$line-height-base;
+  color: var.$text-primary;
+  background-color: var.$surface-color;
+  background-clip: padding-box; // Ensures background doesn't go under border
+  border: var.$border-width solid var.$muted-border-color; // Use muted for default
+  border-radius: var.$border-radius; // Use default radius
+  box-shadow: var.$box-shadow-inset; // Subtle inset shadow
+  transition: border-color var.$transition-duration-base,
+    box-shadow var.$transition-duration-base; // Smoother transition
+
+  @include mix.placeholder {
+    color: var.$text-muted; // Use the muted text color for placeholders
+    opacity: 1; // Ensure full opacity for placeholder
+  }
+
+  &:focus {
+    color: var.$text-primary;
+    background-color: var.$surface-color;
+    border-color: var.$primary; // Highlight with primary color on focus
+    outline: 0; // Remove default browser outline
+    // Use the focus shadow variable for consistency
+    box-shadow: var.$box-shadow-focus, var.$box-shadow-inset;
+
+    // Optional: Change associated label color on input focus
+    // This requires label to be sibling AFTER input or specific JS.
+    // For now, removing this as it can be tricky without specific HTML structure.
+    // & + label,
+    // &:focus-within ~ label { // focus-within is on parent, not input itself
+    //   color: var.$primary;
+    // }
+  }
+
+  // Disabled state
+  &:disabled,
+  &[readonly] {
+    background-color: var.$bg-color; // Lighter background for disabled/readonly
+    opacity: 0.75; // Slightly more visible than default disabled
+    cursor: not-allowed;
+    border-color: var.$border-color-light; // Lighter border
+    box-shadow: none; // Remove inset shadow
+  }
+  &[readonly] {
+    cursor: default; // Readonly fields are not "not-allowed"
+  }
+
+  // Validation states
+  &.is-invalid {
+    border-color: var.$danger;
+    // Provide a clear focus state for invalid fields
+    &:focus {
+      border-color: var.$danger;
+      box-shadow: 0 0 0 var.$border-radius-sm
+          color.change(var.$danger, $alpha: 0.25),
+        var.$box-shadow-inset;
+    }
+    // Consider adding an icon for invalid state if desired
+  }
+  &.is-valid {
+    border-color: var.$success;
+    // Provide a clear focus state for valid fields
+    &:focus {
+      border-color: var.$success;
+      box-shadow: 0 0 0 var.$border-radius-sm
+          color.change(var.$success, $alpha: 0.25),
+        var.$box-shadow-inset;
+    }
+    // Consider adding an icon for valid state if desired
+  }
+}
+
+// Specific styling for textarea
+textarea.form-control {
+  min-height: 100px; // Default min height, adjust as needed
+  resize: vertical; // Allow only vertical resizing
+}
+
+// Select specific styling
+select.form-control {
+  // Appearance for arrow, may need browser-specific prefixes or custom arrow
+  appearance: none; // Remove default system appearance
+  padding-right: calc(
+    var.$spacer-3 + var.$spacer-1 + 1.5rem
+  ); // Make space for custom arrow
+  // background-image: url("data:image/svg+xml,..."); // Add your custom arrow SVG here
+  background-repeat: no-repeat;
+  background-position: right calc(var.$spacer-3 + var.$spacer-1) center;
+  background-size: 16px 12px; // Adjust to your arrow size
+
+  &:disabled {
+    background-image: none; // Remove arrow on disabled select
+  }
+}
+// For multiple select, allow default browser appearance
+select[multiple].form-control {
+  appearance: auto;
+  background-image: none;
+  padding-right: calc(var.$spacer-3 + var.$spacer-1); // Reset padding
+  min-height: 120px; // Give some default height for multiple items
+}
+
+// Checkbox and Radio button groups
+.checkbox-group,
+.radio-group {
+  display: flex;
+  align-items: center; // Vertically align items
+  position: relative;
+  margin-bottom: var.$spacer-2; // Smaller margin for these groups
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    flex-shrink: 0; // Prevent shrinking
+    width: 1.25em; // Slightly larger for better touch target
+    height: 1.25em;
+    // Vertically align checkbox/radio with the first line of label text
+    margin-top: calc(
+      (var.$line-height-base - 1) * 0.5em * -0.5
+    ); // Adjust for better alignment
+    margin-right: var.$spacer-2; // Corrected: was var.$spacer-sm
+    accent-color: var.$primary; // Uses browser's accent color for the check/dot
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6; // Slightly less opaque for disabled state
+      accent-color: var.$text-muted;
+    }
+  }
+  label {
+    // Label associated with checkbox/radio
+    margin-bottom: 0; // Reset margin from global label style
+    font-weight: var.$font-weight-regular;
+    color: var.$text-primary;
+    cursor: pointer;
+    line-height: var.$line-height-base; // Ensure consistent line height
+    flex-grow: 1; // Allow label to take remaining space
+  }
+
+  // Custom styling for checkbox/radio (optional, if browser defaults aren't enough)
+  // This requires more complex HTML structure or pseudo-elements
+}
+
+// Form submission error message styling
+.form-submission-error,
+.form-message {
+  // Generic class for form messages
+  color: var.$danger;
+  background-color: color.adjust(
+    var.$danger,
+    $alpha: -0.9
+  ); // Lighter background
+  border: var.$border-width solid color.adjust(var.$danger, $alpha: -0.5);
+  padding: var.$spacer-3; // Corrected: Was var.$spacer-md
+  border-radius: var.$border-radius;
+  margin-top: var.$spacer-3; // Corrected: Was var.$spacer-md
+  margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  line-height: var.$line-height-sm;
+
+  svg {
+    // Icon within the error message
+    margin-right: var.$spacer-2; // Corrected: Was var.$spacer-sm
+    flex-shrink: 0;
+    font-size: 1.2em; // Slightly larger icon
+  }
+
+  &.success {
+    // Style for success messages
+    color: var.$success;
+    background-color: color.adjust(var.$success, $alpha: -0.9);
+    border-color: color.adjust(var.$success, $alpha: -0.5);
+  }
+  &.info {
+    // Style for info messages
+    color: var.$info;
+    background-color: color.adjust(var.$info, $alpha: -0.9);
+    border-color: color.adjust(var.$info, $alpha: -0.5);
+  }
+}
+
+// Form grid layout utility
+.form-grid {
+  display: grid;
+  gap: var.$spacer-4; // Corrected: Was var.$spacer-lg
+
+  @include mix.screen-breakpoint(md-up) {
+    // Default to 2 columns on medium screens and up
+    grid-template-columns: repeat(2, 1fr);
+
+    // Allow items to span full width within the grid
+    .full-width-grid-item,
+    .grid-col-span-2 {
+      // Added alias class
+      grid-column: 1 / -1; // Span all columns
+    }
+  }
+  // For more complex grids, define more specific column span classes
+  // e.g., .grid-col-md-1, .grid-col-lg-3 etc.
+}

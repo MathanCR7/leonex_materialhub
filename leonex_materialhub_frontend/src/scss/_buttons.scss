@@ -1,0 +1,155 @@
+// src/scss/_buttons.scss
+@use "utils/variables" as var;
+@use "utils/mixins" as mix;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var.$spacer-2 var.$spacer-3; // Adjusted padding
+  font-family: inherit;
+  font-size: var.$font-size-root;
+  font-weight: var.$font-weight-medium;
+  line-height: var.$line-height-base;
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: transparent;
+  border: var.$border-width solid transparent;
+  border-radius: var.$border-radius; // Consistent border radius
+  transition: var.$transition-default, transform 0.1s ease-out,
+    box-shadow 0.15s ease-out;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px); // More subtle hover
+    box-shadow: var.$box-shadow-sm; // Subtle shadow on hover
+  }
+
+  &:focus-visible:not(:disabled) {
+    // Use focus-visible for accessibility
+    outline: 0;
+    box-shadow: var.$box-shadow-focus;
+  }
+
+  &:active:not(:disabled),
+  &.active:not(:disabled) {
+    transform: translateY(0); // Reset transform on active
+    box-shadow: var.$box-shadow-inset;
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  // Icon styling within buttons
+  svg:not(.spinner-icon-btn) {
+    // Ensure spinner isn't affected if it has different needs
+    font-size: 1.1em; // Slightly larger icons
+    // Vertical alignment fix for icons
+    vertical-align: middle;
+    position: relative;
+    top: -0.05em;
+
+    &:first-child:not(:last-child) {
+      // Icon before text
+      margin-right: var.$spacer-2;
+    }
+    &:last-child:not(:first-child) {
+      // Icon after text
+      margin-left: var.$spacer-2;
+    }
+    &:only-child {
+      // Icon-only button
+      margin: 0;
+    }
+  }
+
+  &.btn-icon-only {
+    padding: var.$spacer-2; // Square padding
+    line-height: 1; // Ensure icon centers well
+    svg {
+      margin: 0;
+      font-size: 1.2em; // Slightly larger for icon-only
+    }
+  }
+}
+
+// Button Variants
+.btn-primary {
+  @include mix.button-variant(var.$primary, var.$text-on-primary);
+}
+.btn-secondary {
+  @include mix.button-variant(var.$secondary, var.$text-on-secondary);
+}
+.btn-accent {
+  @include mix.button-variant(var.$accent, var.$text-on-accent);
+}
+.btn-success {
+  @include mix.button-variant(var.$success, var.$text-on-success);
+}
+.btn-danger {
+  @include mix.button-variant(var.$danger, var.$text-on-danger);
+}
+.btn-warning {
+  @include mix.button-variant(var.$warning, var.$text-on-warning);
+}
+.btn-info {
+  @include mix.button-variant(var.$info, var.$text-on-info);
+}
+
+// Outline Button Variants
+.btn-outline-primary {
+  @include mix.button-variant(
+    transparent,
+    var.$primary,
+    var.$primary,
+    $hover-background: var.$primary,
+    $hover-text-color: var.$text-on-primary
+  );
+}
+.btn-outline-secondary {
+  @include mix.button-variant(
+    transparent,
+    var.$secondary,
+    var.$secondary,
+    $hover-background: var.$secondary,
+    $hover-text-color: var.$text-on-secondary
+  );
+}
+.btn-outline-success {
+  @include mix.button-variant(
+    transparent,
+    var.$success,
+    var.$success,
+    $hover-background: var.$success,
+    $hover-text-color: var.$text-on-success
+  );
+}
+// Add other outline variants similarly (danger, warning, info, accent)
+
+// Button Sizes
+.btn-lg {
+  padding: calc(var.$spacer-2 * 1.25) calc(var.$spacer-4 * 1.1); // Slightly larger padding
+  font-size: var.$font-size-lg;
+  border-radius: var.$border-radius-md;
+}
+.btn-sm {
+  padding: var.$spacer-1 var.$spacer-2;
+  font-size: var.$font-size-sm;
+  border-radius: var.$border-radius-sm;
+}
+
+// Button with icon spinner
+.btn .spinner-icon-btn {
+  margin-left: var.$spacer-2; // Default spacing for spinner
+  font-size: 1em; // Match button text size
+  animation: spin 1s linear infinite;
+}
+.btn.btn-icon-only .spinner-icon-btn {
+  margin: 0; // No margin if it's the only thing
+}

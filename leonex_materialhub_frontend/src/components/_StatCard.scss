@@ -1,0 +1,209 @@
+// src/components/_StatCard.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "sass:color";
+
+// Define custom theme colors for stat cards here if not in _variables.scss
+// If these are used more broadly, move them to _variables.scss.
+$stat-card-purple: #6f42c1; // Example purple
+$stat-card-teal: #20c997; // Example teal
+$stat-card-orange: var.$accent; // Use the existing accent orange
+
+.stat-card {
+  // Apply card styling.
+  // The mixin defaults: padding var.$spacer-4, margin-bottom var.$spacer-4, bg var.$surface-color, radius var.$border-radius-lg
+  // We override margin-bottom below.
+  @include mix.card-style(
+    $padding: var.$spacer-3
+  ); // Slightly less padding for stat cards
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; // Content aligns to the start
+  text-align: left;
+  position: relative; // For ::before pseudo-element and icon positioning
+  overflow: hidden; // Ensures ::before doesn't spill if it's larger
+  transition: box-shadow var.$transition-duration-base,
+    transform var.$transition-duration-base;
+  height: 100%; // Make cards in a row equal height if in a flex/grid container
+
+  margin-bottom: 0; // Grid gap will handle vertical spacing between cards
+
+  &:hover {
+    transform: translateY(-4px); // More subtle lift
+    box-shadow: var.$box-shadow-lg; // Corrected: Was var.$box-shadow-large
+  }
+
+  // Accent bar at the top
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px; // Slightly thinner accent bar
+    background-color: var.$primary; // Default, overridden by specific types
+    transition: background-color var.$transition-duration-base;
+  }
+
+  .stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start; // Align icon to top with title
+    width: 100%;
+    margin-bottom: var.$spacer-3; // Corrected: Was var.$spacer-md
+    padding-top: var.$spacer-3; // Adjusted space below the ::before accent, matching overall padding
+    position: relative; // Ensure it's above the ::before
+  }
+
+  .stat-card-title {
+    font-size: var.$font-size-sm; // Use small font size variable
+    font-weight: var.$font-weight-semibold; // Bolder title
+    color: var.$text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em; // Slight letter spacing for uppercase
+    margin: 0;
+    line-height: var.$line-height-sm;
+  }
+
+  .stat-card-icon {
+    font-size: 1.8rem; // Slightly larger icon
+    opacity: 0.6; // Slightly less opaque
+    transition: opacity var.$transition-duration-base,
+      color var.$transition-duration-base;
+    margin-left: var.$spacer-2; // Space it from the right edge
+    // Specific icon color will be set by .bg-* classes
+  }
+
+  .stat-card-body {
+    width: 100%;
+    flex-grow: 1; // Allows body to take remaining space if card height is fixed
+    display: flex;
+    flex-direction: column;
+    justify-content: center; // Vertically center value if card has fixed height
+  }
+
+  .stat-card-value {
+    font-size: 2.2rem; // Slightly smaller for balance
+    font-weight: var.$font-weight-bold;
+    color: var.$text-primary;
+    margin: 0 0 var.$spacer-2 0; // Corrected: Was var.$spacer-sm
+    line-height: 1.1; // Tighter line height for large numbers
+    transition: color var.$transition-duration-base;
+  }
+
+  .stat-card-unit,
+  .stat-card-change {
+    // Additional info like units or percentage change
+    font-size: var.$font-size-sm; // Use small font size
+    color: var.$text-muted; // Muted color for less emphasis
+    font-weight: var.$font-weight-regular;
+  }
+  .stat-card-change {
+    margin-top: var.$spacer-1;
+    &.positive {
+      color: var.$success;
+    }
+    &.negative {
+      color: var.$danger;
+    }
+  }
+
+  // --- Specific Color Variants ---
+  // Apply these classes to the .stat-card element
+
+  // Default variant (if no .bg-* class is applied)
+  &:not([class*="bg-"]) {
+    &::before {
+      background-color: var.$primary;
+    }
+    .stat-card-icon {
+      color: var.$primary;
+    }
+    // .stat-card-value { color: var.$primary-dark; } // Optional
+  }
+
+  &.bg-blue {
+    // Explicit blue, same as default
+    &::before {
+      background-color: var.$primary;
+    }
+    .stat-card-icon {
+      color: var.$primary;
+    }
+    // .stat-card-value { color: var.$primary-dark; }
+  }
+
+  &.bg-green {
+    &::before {
+      background-color: var.$success;
+    }
+    .stat-card-icon {
+      color: var.$success;
+    }
+    // .stat-card-value { color: color.adjust(var.$success, $lightness: -10%); }
+  }
+
+  &.bg-yellow {
+    &::before {
+      background-color: var.$warning;
+    }
+    .stat-card-icon {
+      color: var.$warning;
+    }
+    // Text colors for readability on yellow (uses $text-on-warning which is $text-primary)
+    .stat-card-value {
+      color: var.$text-on-warning;
+    }
+    .stat-card-title {
+      color: color.adjust(var.$text-on-warning, $lightness: 10%, $alpha: -0.15);
+    }
+    .stat-card-unit,
+    .stat-card-change {
+      color: color.adjust(var.$text-on-warning, $lightness: 15%, $alpha: -0.25);
+    }
+  }
+
+  &.bg-red {
+    // Added a red variant using $danger
+    &::before {
+      background-color: var.$danger;
+    }
+    .stat-card-icon {
+      color: var.$danger;
+    }
+    // .stat-card-value { color: color.adjust(var.$danger, $lightness: -5%); }
+  }
+
+  &.bg-purple {
+    &::before {
+      background-color: $stat-card-purple;
+    }
+    .stat-card-icon {
+      color: $stat-card-purple;
+    }
+    // .stat-card-value { color: color.adjust($stat-card-purple, $lightness: -10%); }
+  }
+
+  &.bg-teal {
+    &::before {
+      background-color: $stat-card-teal;
+    }
+    .stat-card-icon {
+      color: $stat-card-teal;
+    }
+    // .stat-card-value { color: color.adjust($stat-card-teal, $lightness: -15%); }
+  }
+
+  &.bg-orange {
+    // Uses $accent for orange
+    &::before {
+      background-color: $stat-card-orange;
+    }
+    .stat-card-icon {
+      color: $stat-card-orange;
+    }
+    // On orange, dark text is good for value
+    // .stat-card-value { color: var.$text-primary; }
+  }
+}

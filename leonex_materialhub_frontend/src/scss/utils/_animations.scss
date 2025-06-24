@@ -1,0 +1,73 @@
+// src/scss/utils/_animations.scss
+@use "variables" as var;
+
+// Fade in
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fadeIn var.$transition-duration-base var.$transition-easing-base
+    forwards;
+}
+
+// Slide in from bottom
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.slide-in-up {
+  animation: slideInUp var.$transition-duration-base var.$transition-easing-base
+    forwards;
+}
+
+// Spinner animation
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.spinner-icon {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+.spinner-icon-btn {
+  // For use inside buttons
+  @extend .spinner-icon;
+  margin-right: var.$spacer-sm;
+}
+.large-spinner {
+  font-size: var.$spacer-xxl; // Larger spinner for full page loads
+}
+
+// Subtle pulse for attention
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var.$primary, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(var.$primary, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var.$primary, 0);
+  }
+}
+.pulse-effect {
+  animation: pulse 2s infinite;
+}

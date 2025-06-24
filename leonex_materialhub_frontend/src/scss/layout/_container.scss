@@ -1,0 +1,61 @@
+// src/scss/layout/_container.scss
+@use "../utils/variables" as var;
+@use "../utils/mixins" as mix; // For screen-breakpoint
+
+.container,
+.container-fluid {
+  width: 100%;
+  // Assuming 'md' spacer is 1rem or 16px, which is $spacer-3 in your variables
+  padding-right: var.$spacer-3; // Corrected: Was var.$spacer-md
+  padding-left: var.$spacer-3; // Corrected: Was var.$spacer-md
+  margin-right: auto;
+  margin-left: auto;
+}
+
+// Standard container that maxes out at each breakpoint
+.container {
+  // These max-widths are examples, adjust based on your design grid.
+  // The subtractions (-30px, -40px etc.) are to account for the container's own padding,
+  // ensuring content width is precisely the breakpoint minus padding.
+  // Alternatively, use `box-sizing: border-box;` on .container and set max-width directly to breakpoint.
+  // For simplicity, directly using breakpoint values for max-width is often cleaner if padding is consistent.
+
+  @include mix.screen-breakpoint(sm-up) {
+    max-width: var.$bp-sm;
+  }
+  @include mix.screen-breakpoint(md-up) {
+    max-width: var.$bp-md;
+  }
+  @include mix.screen-breakpoint(lg-up) {
+    max-width: var.$bp-lg;
+  }
+  @include mix.screen-breakpoint(xl-up) {
+    max-width: var.$bp-xl;
+  }
+  @include mix.screen-breakpoint(xxl-up) {
+    max-width: var.$bp-xxl;
+  }
+}
+
+// Specific padding for the main content area when it uses the .container class
+main.main-content.container {
+  // Assuming 'xl' spacer is 2rem or 32px, which is $spacer-5
+  // Assuming 'xxl' spacer is 3rem or 48px, which is $spacer-6
+  padding-top: var.$spacer-5; // Corrected: Was var.$spacer-xl
+  padding-bottom: var.$spacer-6; // Corrected: Was var.$spacer-xxl
+
+  @include mix.screen-breakpoint(xs-only) {
+    // Less padding on very small screens
+    padding-top: var.$spacer-4;
+    padding-bottom: var.$spacer-5;
+  }
+}
+
+// Optional: A container class for full-width sections that still need horizontal padding
+.container-edge-padded {
+  width: 100%;
+  padding-right: var.$spacer-3; // Use your 'md' equivalent for side padding
+  padding-left: var.$spacer-3;
+  margin-right: auto;
+  margin-left: auto;
+}

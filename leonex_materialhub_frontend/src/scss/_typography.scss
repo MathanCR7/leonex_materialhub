@@ -1,0 +1,176 @@
+// src/scss/_typography.scss
+@use "sass:color"; // ADD THIS LINE
+@use "utils/variables" as var;
+@use "utils/mixins" as mix;
+
+body {
+  font-family: var.$font-family-sans;
+  font-size: var.$font-size-root;
+  font-weight: var.$font-weight-regular;
+  line-height: var.$line-height-base;
+  color: var.$text-primary;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var.$bg-color; // Added for completeness
+}
+
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6 {
+  margin-top: 0;
+  margin-bottom: var.$spacer-3; // Assuming you've aliased/defined $spacer-md to $spacer-3
+  font-family: inherit;
+  font-weight: var.$font-weight-semibold;
+  line-height: var.$line-height-heading;
+  color: var.$text-primary;
+}
+
+h1,
+.h1 {
+  @include mix.fluid-typography(var.$bp-sm, var.$bp-xl, 1.75rem, 2.5rem);
+}
+h2,
+.h2 {
+  @include mix.fluid-typography(var.$bp-sm, var.$bp-xl, 1.5rem, 2rem);
+}
+h3,
+.h3 {
+  @include mix.fluid-typography(var.$bp-sm, var.$bp-xl, 1.35rem, 1.75rem);
+}
+h4,
+.h4 {
+  font-size: 1.25rem;
+}
+h5,
+.h5 {
+  font-size: 1.1rem;
+}
+h6,
+.h6 {
+  font-size: 1rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: var.$spacer-3; // Assuming you've aliased/defined $spacer-md to $spacer-3
+}
+
+a {
+  color: var.$primary;
+  text-decoration: none;
+  background-color: transparent;
+  transition: color var.$transition-duration-short var.$transition-easing-base,
+    text-decoration-color var.$transition-duration-short
+      var.$transition-easing-base;
+
+  &:hover {
+    color: var.$primary-dark;
+    text-decoration: underline;
+    text-decoration-color: var.$primary-dark;
+  }
+  &:focus-visible {
+    outline: 2px solid var.$primary-light;
+    outline-offset: 2px;
+    border-radius: var.$border-radius-sm;
+  }
+}
+
+strong,
+b {
+  font-weight: var.$font-weight-bold;
+}
+small,
+.small {
+  font-size: 0.875em;
+}
+
+hr {
+  margin-top: var.$spacer-4;
+  margin-bottom: var.$spacer-4;
+  border: 0;
+  border-top: var.$border-width solid var.$border-color-light;
+}
+
+.page-header {
+  margin-bottom: var.$spacer-5;
+  padding-bottom: var.$spacer-3; // Assuming you've aliased/defined $spacer-md to $spacer-3
+  border-bottom: var.$border-width solid var.$border-color;
+
+  h1,
+  .h1 {
+    margin-bottom: var.$spacer-2;
+    color: var.$text-primary;
+  }
+  .page-subtitle {
+    font-size: var.$font-size-lg;
+    color: var.$text-secondary;
+    font-weight: var.$font-weight-light;
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: var.$line-height-sm;
+  }
+}
+
+.text-muted {
+  color: var.$text-muted !important;
+}
+.text-danger {
+  color: var.$danger !important;
+}
+.text-success {
+  color: var.$success !important;
+}
+.text-warning {
+  color: color.adjust(
+    var.$warning,
+    $lightness: -25%
+  ) !important; // Darker warning text
+}
+.text-info {
+  color: var.$info !important;
+}
+.text-primary {
+  color: var.$primary !important;
+}
+.text-secondary {
+  color: var.$text-secondary !important;
+}
+
+.lead {
+  font-size: var.$font-size-lg;
+  font-weight: var.$font-weight-light;
+}
+
+blockquote {
+  margin: 0 0 var.$spacer-3;
+  padding: var.$spacer-3 var.$spacer-4;
+  font-size: 1.1rem;
+  color: var.$text-secondary;
+  border-left: 0.3rem solid var.$border-color;
+  background-color: var.$surface-light;
+  border-radius: 0 var.$border-radius var.$border-radius 0;
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  footer {
+    display: block;
+    font-size: 80%;
+    color: var.$text-muted;
+    margin-top: var.$spacer-2;
+
+    &::before {
+      content: "\2014 \00A0"; // Em dash, nbsp
+    }
+  }
+}

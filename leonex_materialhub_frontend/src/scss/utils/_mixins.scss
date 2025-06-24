@@ -1,0 +1,177 @@
+// src/scss/utils/_mixins.scss
+@use "sass:color";
+@use "sass:math"; // Added for math.div and math.is-unitless
+@use "sass:meta"; // Added for meta.type-of
+@use "variables" as var;
+
+// Flexbox centering
+@mixin flex-center($direction: row, $justify: center, $align: center) {
+  display: flex;
+  flex-direction: $direction;
+  justify-content: $justify;
+  align-items: $align;
+}
+
+// Basic card styling
+@mixin card-style(
+  $padding: var.$spacer-4,
+  $margin-bottom: var.$spacer-4,
+  $background: var.$surface-color,
+  $border-radius: var.$border-radius-lg
+) {
+  background-color: $background;
+  padding: $padding;
+  border-radius: $border-radius;
+  box-shadow: var.$box-shadow;
+  margin-bottom: $margin-bottom;
+  border: var.$border-width solid var.$border-color-light;
+}
+
+// Media query helper
+@mixin screen-breakpoint($size) {
+  @if $size == xs-only {
+    @media (max-width: (var.$bp-sm - 0.02px)) {
+      // Use .02px for common non-inclusive max-width
+      @content;
+    }
+  } @else if $size == sm-up {
+    @media (min-width: var.$bp-sm) {
+      @content;
+    }
+  } @else if $size == md-up {
+    @media (min-width: var.$bp-md) {
+      @content;
+    }
+  } @else if $size == lg-up {
+    @media (min-width: var.$bp-lg) {
+      @content;
+    }
+  } @else if $size == xl-up {
+    @media (min-width: var.$bp-xl) {
+      @content;
+    }
+  } @else if $size == xxl-up {
+    @media (min-width: var.$bp-xxl) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint '#{$size}' not recognized.";
+  }
+}
+
+// Button variant generator
+@mixin button-variant(
+  $background,
+  $text-color: null,
+  $border-color: $background,
+  $hover-background: null,
+  $hover-text-color: null,
+  $hover-border-color: null,
+  $active-background: null,
+  $active-border-color: null
+) {
+  $final-text-color: $text-color;
+  @if $final-text-color == null {
+    // UPDATED: color.lightness() to color.channel()
+    @if color.channel($background, "lightness", $space: hsl) > 55 {
+      $final-text-color: var.$text-primary;
+    } @else {
+      $final-text-color: #fff;
+    }
+  }
+
+  $final-hover-background: $hover-background;
+  @if $final-hover-background == null {
+    $final-hover-background: if(
+      // UPDATED: color.lightness() to color.channel()
+      color.channel($background, "lightness", $space: hsl) >
+        55,
+      color.adjust($background, $lightness: -7%),
+      color.adjust($background, $lightness: 7%)
+    );
+  }
+  $final-hover-text-color: $hover-text-color or $final-text-color;
+  $final-hover-border-color: $hover-border-color or $final-hover-background;
+
+  $final-active-background: $active-background or
+    if(
+      // UPDATED: color.lightness() to color.channel()
+      color.channel($background, "lightness", $space: hsl) > 55,
+      color.adjust($background, $lightness: -12%),
+      color.adjust($background, $lightness: 12%)
+    );
+  $final-active-border-color: $active-border-color or $final-active-background;
+
+  color: $final-text-color;
+  background-color: $background;
+  border-color: $border-color;
+
+  &:hover:not(:disabled) {
+    color: $final-hover-text-color;
+    background-color: $final-hover-background;
+    border-color: $final-hover-border-color;
+  }
+  &:active:not(:disabled),
+  &.active:not(:disabled) {
+    background-color: $final-active-background;
+    border-color: $final-active-border-color;
+  }
+}
+
+// Placeholder text styling
+@mixin placeholder {
+  &::placeholder {
+    color: var.$text-muted;
+    opacity: 1; // Override Firefox's default opacity
+    @content;
+  }
+  &::-webkit-input-placeholder {
+    color: var.$text-muted;
+    @content;
+  }
+  &::-moz-placeholder {
+    color: var.$text-muted;
+    opacity: 1;
+    @content;
+  }
+  &:-ms-input-placeholder {
+    color: var.$text-muted !important; // IE needs important sometimes
+    @content;
+  }
+  &::-ms-input-placeholder {
+    color: var.$text-muted;
+    @content;
+  }
+}
+
+// Reset list styling
+@mixin reset-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+// For responsive font sizes (optional)
+@mixin fluid-typography($min-vw, $max-vw, $min-font-size, $max-font-size) {
+  font-size: $min-font-size;
+  @media (min-width: $min-vw) {
+    font-size: calc(
+      #{$min-font-size} + #{strip-unit($max-font-size - $min-font-size)} *
+        ((100vw - #{$min-vw}) / #{strip-unit($max-vw - $min-vw)})
+    );
+  }
+  @media (min-width: $max-vw) {
+    font-size: $max-font-size;
+  }
+}
+
+// Helper to remove unit from a number (for calc)
+@function strip-unit($number) {
+  // UPDATED: type-of to meta.type-of and unitless to math.is-unitless
+  @if meta.type-of($number) == "number" and not math.is-unitless($number) {
+    // UPDATED: / to math.div()
+    @return math.div($number, ($number * 0 + 1));
+  }
+  @return $number;
+}

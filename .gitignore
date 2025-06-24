@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+dist/
+**/dist/ # If you don't want to commit build output
+
+# Environment variables
+.env
+**/.env
+.env.*
+**/.env.*
+!.env.example # It's good practice to commit an example env file
+
+# macOS
+.DS_Store
+
+# IDE specific
+.vscode/
+.idea/

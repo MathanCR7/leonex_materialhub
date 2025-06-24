@@ -1,0 +1,167 @@
+// src/pages/_DashboardPage.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "sass:color"; // Not strictly used here yet, but good practice
+
+// StatCard styles are in _StatCard.scss, which should be imported via main.scss or directly if needed.
+
+.dashboard-page {
+  // .page-header and h1 styling should come from global _typography.scss or _layout.scss
+
+  .statistics-section {
+    margin-bottom: var.$spacer-6; // Corrected: Was var.$spacer-xxl. Significant bottom margin.
+    h2 {
+      // Section title styling can be global (e.g., from _typography.scss for h2)
+      // Or specific here if needed:
+      // font-size: 1.75rem;
+      margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg. Space below section title.
+      // color: var.$text-primary;
+      // border-bottom: 2px solid var.$primary-light; // Optional accent
+      // padding-bottom: var.$spacer-2;
+      // display: inline-block;
+    }
+    .stats-grid {
+      display: grid;
+      // Responsive columns for StatCard components
+      grid-template-columns: repeat(
+        auto-fit,
+        minmax(260px, 1fr)
+      ); // Min width for stat cards
+      gap: var.$spacer-4; // Corrected: Was var.$spacer-lg. Gap between stat cards.
+      // margin-bottom: var.$spacer-5; // Corrected: Was var.$spacer-xl. Space after the grid, if needed before next section.
+      // Often, the next section's top margin handles this.
+    }
+  }
+
+  // .stat-card styles are primarily in _StatCard.scss.
+  // The .stats-grid above handles their layout.
+
+  .recent-activity-section {
+    // Generic section for recent items
+    margin-bottom: var.$spacer-6; // Consistent bottom margin for sections
+    h2 {
+      margin-bottom: var.$spacer-4;
+    }
+  }
+
+  .recent-materials-card {
+    @include mix.card-style; // Applies default card styling
+    // Override card padding if needed for this specific card
+    // padding: var.$spacer-4;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      margin-top: 0; // Reset margin if card-style adds it
+      margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg. Space after card title.
+      color: var.$primary-dark;
+      font-size: 1.4rem; // Slightly larger for card titles
+      font-weight: var.$font-weight-semibold;
+
+      svg {
+        // Icon next to h3 title (e.g., FaList, FaHistory)
+        margin-right: var.$spacer-3; // Corrected: Was var.$spacer-md. Space between icon and text.
+        font-size: 1.1em; // Relative to h3 font size, making it proportional
+        color: var.$primary;
+        position: relative; // For fine-tuning
+        top: -0.05em;
+      }
+    }
+
+    ul {
+      @include mix.reset-list; // Use mixin to remove default list styles
+
+      li {
+        padding: var.$spacer-3 0; // Corrected: Was var.$spacer-sm. Vertical padding for list items.
+        border-bottom: var.$border-width solid var.$border-color-light; // Use lighter border
+        transition: background-color var.$transition-duration-short;
+
+        &:last-child {
+          border-bottom: none;
+          padding-bottom: 0; // No padding at the very bottom of the list
+        }
+        &:first-child {
+          padding-top: 0; // No padding at the very top if h3 is present
+        }
+
+        &:hover {
+          background-color: color.adjust(
+            var.$surface-color,
+            $lightness: -2%
+          ); // Subtle hover
+        }
+
+        .recent-material-header {
+          font-weight: var.$font-weight-medium;
+          color: var.$text-primary;
+          margin-bottom: var.$spacer-2; // Space between header and details
+          display: block; // Ensure it takes full width
+          font-size: 1rem;
+        }
+
+        .recent-material-details {
+          font-size: var.$font-size-sm; // Use small font size variable
+          color: var.$text-secondary; // Use secondary text for details
+          display: flex;
+          flex-wrap: wrap;
+          gap: var.$spacer-2 var.$spacer-3; // Row and column gap for details
+          // (8px vertical, 16px horizontal)
+
+          span {
+            // Individual detail items (e.g., Plant, Category)
+            display: inline-flex; // Align icon with text if any
+            align-items: center;
+            svg {
+              margin-right: var.$spacer-1;
+              font-size: 1.1em; // Slightly larger icons in details
+              color: var.$text-muted;
+            }
+          }
+        }
+      }
+    }
+    .no-recent-data {
+      // Style for when the list is empty
+      padding: var.$spacer-4 0;
+      text-align: center;
+      font-style: italic;
+      color: var.$text-muted;
+    }
+  }
+
+  // Styling for loading/error messages related to dashboard stats or charts
+  .loading-text,
+  .error-message {
+    padding: var.$spacer-5 0; // Corrected: Was var.$spacer-xl. Consistent with other large paddings.
+    text-align: center;
+    font-style: italic;
+    color: var.$text-secondary;
+    font-size: 1.1rem;
+
+    &.error-message {
+      color: var.$danger;
+      font-weight: var.$font-weight-medium;
+    }
+  }
+
+  // Placeholder for charts if you add them
+  .charts-section {
+    margin-bottom: var.$spacer-6;
+    h2 {
+      margin-bottom: var.$spacer-4;
+    }
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr; // Default to single column
+      gap: var.$spacer-4;
+      @include mix.screen-breakpoint(lg-up) {
+        grid-template-columns: repeat(2, 1fr); // Two columns on larger screens
+      }
+    }
+    .chart-container {
+      @include mix.card-style;
+      // padding: var.$spacer-4; // Card style already includes padding
+      // Add specific styles for chart canvas or library wrapper
+    }
+  }
+}

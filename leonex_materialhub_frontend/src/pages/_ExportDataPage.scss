@@ -1,0 +1,260 @@
+// src/pages/_ExportDataPage.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "sass:color";
+
+.export-data-page {
+  // .page-header and h1 styling from global _typography.scss
+
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(var.$surface-color, 0.85);
+    @include mix.flex-center(column);
+    z-index: var.$z-index-toast + 10; // Above everything
+    color: var.$text-primary;
+
+    .spinner-icon.large-spinner {
+      font-size: 3rem;
+      color: var.$primary;
+      margin-bottom: var.$spacer-3;
+    }
+    p {
+      font-size: 1.1rem;
+      font-weight: var.$font-weight-medium;
+    }
+  }
+
+  .export-controls,
+  .bulk-export-section,
+  .single-export-section {
+    @include mix.card-style(
+      $padding: var.$spacer-4,
+      $margin-bottom: var.$spacer-5
+    );
+    h2 {
+      font-size: 1.5rem;
+      color: var.$primary-dark;
+      margin-top: 0;
+      margin-bottom: var.$spacer-4;
+      padding-bottom: var.$spacer-2;
+      border-bottom: 1px solid var.$border-color-light;
+    }
+  }
+
+  .radio-group-row {
+    display: flex;
+    gap: var.$spacer-4;
+    margin-bottom: var.$spacer-3;
+    .radio-label {
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      color: var.$text-secondary;
+      cursor: pointer;
+      input[type="radio"] {
+        margin-right: var.$spacer-2;
+        accent-color: var.$primary;
+        transform: scale(1.1);
+      }
+      &:hover {
+        color: var.$text-primary;
+      }
+    }
+  }
+
+  .filter-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end; // Align items to bottom if they have different heights
+    gap: var.$spacer-3;
+    margin-bottom: var.$spacer-4;
+
+    .form-control {
+      // For select and datepicker input
+      min-width: 200px;
+      flex-grow: 1;
+      @include mix.screen-breakpoint(md-up) {
+        flex-grow: 0; // Don't grow too much on larger screens
+      }
+    }
+    .date-range-picker {
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-2;
+      flex-grow: 1;
+      @include mix.screen-breakpoint(md-up) {
+        flex-grow: 0;
+        min-width: 280px;
+      }
+      .react-datepicker-wrapper {
+        width: 100%;
+      }
+      svg {
+        color: var.$text-muted;
+        font-size: 1.2em;
+      }
+    }
+
+    .btn {
+      white-space: nowrap; // Prevent button text wrapping
+    }
+  }
+
+  .search-results-filter {
+    display: flex;
+    align-items: center;
+    margin-bottom: var.$spacer-3;
+    border: 1px solid var.$border-color;
+    border-radius: var.$border-radius;
+    padding-left: var.$spacer-2;
+    background-color: var.$surface-light;
+    .search-icon {
+      color: var.$text-muted;
+      margin-right: var.$spacer-2;
+    }
+    .form-control {
+      border: none;
+      box-shadow: none;
+      padding-left: 0;
+      &:focus {
+        box-shadow: none;
+      }
+    }
+  }
+
+  .bulk-actions {
+    display: flex;
+    gap: var.$spacer-3;
+    margin-bottom: var.$spacer-3;
+    flex-wrap: wrap; // Allow buttons to wrap on small screens
+    .btn {
+      flex-grow: 1; // Make buttons take equal space if desired
+      @include mix.screen-breakpoint(sm-up) {
+        flex-grow: 0;
+      }
+    }
+  }
+  .results-summary {
+    font-size: var.$font-size-sm;
+    color: var.$text-muted;
+    margin-bottom: var.$spacer-2;
+    text-align: right;
+  }
+
+  .submissions-preview-table {
+    overflow-x: auto; // Allow horizontal scroll for table on small screens
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: var.$spacer-3;
+      font-size: 0.9rem;
+      th,
+      td {
+        padding: var.$spacer-2 var.$spacer-3;
+        text-align: left;
+        border-bottom: 1px solid var.$border-color-light;
+        white-space: nowrap; // Prevent text wrapping in cells
+      }
+      th {
+        background-color: var.$bg-color;
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+      }
+      tbody tr {
+        &:hover {
+          background-color: color.adjust(var.$surface-color, $lightness: -2%);
+        }
+      }
+      td .btn-icon {
+        // For PDF/Word download icons in table
+        margin-right: var.$spacer-2;
+        color: var.$text-muted;
+        &:hover {
+          color: var.$primary;
+        }
+        &.fa-file-pdf:hover {
+          color: var.$danger;
+        }
+        &.fa-file-word:hover {
+          color: var.$info;
+        }
+      }
+    }
+  }
+  .no-data-message {
+    text-align: center;
+    padding: var.$spacer-5 0;
+    color: var.$text-muted;
+    font-style: italic;
+  }
+
+  .single-export-form {
+    .form-group {
+      margin-bottom: var.$spacer-3;
+    }
+    .btn {
+      margin-top: var.$spacer-2;
+    }
+  }
+
+  .single-submission-details {
+    margin-top: var.$spacer-4;
+    padding-top: var.$spacer-4;
+    border-top: 1px solid var.$border-color-light;
+    h3 {
+      font-size: 1.2rem;
+      color: var.$text-primary;
+      margin-bottom: var.$spacer-3;
+    }
+    p {
+      margin-bottom: var.$spacer-2;
+      font-size: 0.95rem;
+      strong {
+        font-weight: var.$font-weight-medium;
+      }
+    }
+    .export-actions {
+      margin-top: var.$spacer-4;
+      display: flex;
+      gap: var.$spacer-3;
+      .btn {
+        flex-grow: 1;
+        @include mix.screen-breakpoint(sm-up) {
+          flex-grow: 0;
+        }
+      }
+    }
+  }
+}
+.export-data-page {
+  // ...
+  .single-submission-details {
+    // ...
+    p {
+      word-break: break-word; // Helps if long descriptions or links break layout
+    }
+  }
+
+  .submissions-preview-table {
+    table {
+      td,
+      th {
+        vertical-align: middle; // Better vertical alignment in table cells
+      }
+      .btn-icon {
+        // Ensure icon buttons are not too large
+        padding: 0.25rem 0.5rem;
+        svg {
+          font-size: 1rem; // Adjust icon size if needed
+        }
+      }
+    }
+  }
+}

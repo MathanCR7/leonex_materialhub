@@ -1,0 +1,310 @@
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "../scss/buttons"; // For .btn, .btn-sm
+@use "sass:color";
+
+$top-bar-height: 65px; // Define top bar height for consistent use
+
+.top-bar {
+  background-color: var.$surface-color;
+  color: var.$text-primary;
+  box-shadow: var.$box-shadow;
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: var.$z-index-sticky;
+  transition: background-color var.$transition-duration-base,
+    box-shadow var.$transition-duration-base;
+  border-bottom: var.$border-width solid var.$border-color-light;
+  height: $top-bar-height; // Set the height of the top bar
+
+  .top-bar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%; // Fill the height of .top-bar
+    // .container or .container-fluid class (applied in JSX) handles horizontal padding and max-width.
+  }
+
+  .logo {
+    font-size: 1.4rem;
+    font-weight: var.$font-weight-bold;
+    color: var.$primary;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: opacity var.$transition-duration-short,
+      color var.$transition-duration-short;
+
+    img {
+      height: 32px;
+      margin-right: var.$spacer-2;
+      transition: transform var.$transition-duration-base;
+    }
+    span {
+      letter-spacing: -0.25px;
+    }
+
+    &:hover {
+      opacity: 0.85;
+      color: var.$primary-dark;
+      img {
+        transform: rotate(-5deg) scale(1.05);
+      }
+    }
+  }
+
+  // Desktop Navigation
+  .main-nav.desktop-nav {
+    ul {
+      @include mix.reset-list;
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-1;
+
+      li a {
+        color: var.$text-secondary;
+        text-decoration: none;
+        padding: var.$spacer-2 var.$spacer-3;
+        border-radius: var.$border-radius;
+        font-weight: var.$font-weight-medium;
+        display: flex;
+        align-items: center;
+        gap: var.$spacer-2;
+        position: relative;
+        transition: color var.$transition-duration-short,
+          background-color var.$transition-duration-short;
+
+        svg {
+          font-size: 1.2em;
+          position: relative;
+          top: -0.05em;
+        }
+
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: 6px;
+          left: var.$spacer-3;
+          right: var.$spacer-3;
+          height: 2px;
+          background-color: var.$primary;
+          transform: scaleX(0);
+          transition: transform var.$transition-duration-base
+            var.$transition-easing-base;
+          transform-origin: center;
+        }
+
+        &:hover,
+        &.active-link {
+          color: var.$primary-dark;
+          background-color: color.adjust(
+            var.$primary,
+            $alpha: -0.9 // Very light primary tint
+          );
+
+          &::after {
+            transform: scaleX(1);
+          }
+        }
+        &.active-link {
+          font-weight: var.$font-weight-semibold;
+        }
+      }
+    }
+
+    @include mix.screen-breakpoint(xs-only) {
+      display: none; // Hide desktop nav on small screens
+    }
+  }
+
+  .user-actions {
+    display: flex;
+    align-items: center;
+    gap: var.$spacer-3;
+
+    .welcome-user {
+      font-size: 0.9rem;
+      color: var.$text-secondary;
+      display: none; // Hidden by default, shown on md-up
+      align-items: center;
+
+      .user-icon {
+        color: var.$primary;
+        font-size: 1.4em;
+        margin-right: var.$spacer-2;
+      }
+      strong {
+        font-weight: var.$font-weight-medium;
+        color: var.$text-primary;
+      }
+
+      @include mix.screen-breakpoint(md-up) {
+        display: flex;
+      }
+    }
+
+    .logout-button {
+      @extend .btn;
+      @extend .btn-sm;
+      @include mix.button-variant(
+        $background: transparent,
+        $text-color: var.$danger,
+        $border-color: var.$danger,
+        $hover-background: var.$danger,
+        $hover-text-color: var.$text-on-danger
+      );
+      padding: var.$spacer-1 var.$spacer-2;
+
+      svg {
+        margin-right: var.$spacer-1;
+        font-size: 1em;
+      }
+    }
+
+    @include mix.screen-breakpoint(xs-only) {
+      display: none; // Hide entire user-actions block on small screens
+    }
+  }
+
+  .mobile-nav-toggle {
+    @extend .btn;
+    @extend .btn-icon-only;
+    @extend .btn-outline-secondary;
+    display: none; // Hidden by default
+    padding: var.$spacer-2;
+
+    svg {
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    @include mix.screen-breakpoint(xs-only) {
+      display: inline-flex;
+      margin-left: auto;
+    }
+  }
+
+  // Mobile Navigation Menu (Drawer/Dropdown)
+  .main-nav.mobile-nav-menu {
+    position: absolute;
+    top: $top-bar-height;
+    left: 0;
+    width: 100%;
+    background-color: var.$surface-color;
+    box-shadow: var.$box-shadow-lg;
+    z-index: var.$z-index-sticky - 1;
+    border-top: var.$border-width solid var.$border-color-light;
+
+    max-height: 0;
+    opacity: 0;
+    visibility: hidden;
+    overflow-y: hidden;
+    transition: max-height var.$transition-duration-base
+        var.$transition-easing-base,
+      opacity var.$transition-duration-base var.$transition-easing-base,
+      visibility 0s linear var.$transition-duration-base;
+
+    &.no-transition {
+      transition: none;
+    }
+
+    ul {
+      @include mix.reset-list;
+      display: flex;
+      flex-direction: column;
+      padding: var.$spacer-2 0;
+
+      li {
+        a,
+        .mobile-logout-button {
+          display: flex;
+          align-items: center;
+          padding: var.$spacer-3 var.$spacer-4;
+          color: var.$text-secondary;
+          text-decoration: none;
+          font-weight: var.$font-weight-medium;
+          gap: var.$spacer-3;
+          transition: color var.$transition-duration-short,
+            background-color var.$transition-duration-short;
+
+          svg {
+            font-size: 1.3em;
+            color: var.$text-muted;
+            transition: color var.$transition-duration-short;
+            width: 1.5em;
+            text-align: center;
+          }
+
+          &:hover,
+          &.active-link {
+            color: var.$primary-dark;
+            background-color: color.adjust(var.$primary, $alpha: -0.92);
+            svg {
+              color: var.$primary-dark;
+            }
+          }
+          &.active-link {
+            font-weight: var.$font-weight-semibold;
+          }
+        }
+      }
+
+      .mobile-logout-item {
+        margin-top: var.$spacer-2;
+        padding-top: var.$spacer-2;
+        border-top: var.$border-width solid var.$border-color-light;
+
+        .mobile-logout-button {
+          width: 100%;
+          justify-content: flex-start;
+          color: var.$danger;
+          background-color: transparent;
+          border: none;
+
+          svg {
+            color: var.$danger;
+          }
+
+          &:hover {
+            color: var.$text-on-danger;
+            background-color: var.$danger;
+            svg {
+              color: var.$text-on-danger;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.mobile-menu-active {
+    .main-nav.mobile-nav-menu {
+      max-height: calc(100vh - #{$top-bar-height});
+      opacity: 1;
+      visibility: visible;
+      overflow-y: auto;
+      transition: max-height var.$transition-duration-base
+          var.$transition-easing-base,
+        opacity var.$transition-duration-base var.$transition-easing-base,
+        visibility 0s linear 0s;
+    }
+  }
+
+  // Specific adjustments for top-bar elements on small screens
+  @include mix.screen-breakpoint(xs-only) {
+    .logo {
+      font-size: 1.25rem;
+      img {
+        height: 28px;
+        // The problematic line 'margin-right: var.$spacer-1_5;' was here.
+        // The line below is correct and uses a defined variable.
+        margin-right: var.$spacer-2;
+      }
+      span {
+        // letter-spacing: -0.1px;
+      }
+    }
+  }
+}

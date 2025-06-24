@@ -1,0 +1,10 @@
+// src/App.scss
+// This file is the main entry point for all your SASS/SCSS styles.
+// It imports main.scss from the scss directory, which then orchestrates all other imports.
+
+@use "./scss/main";
+
+// If you're not importing react-toastify.css in your JS (e.g., App.jsx or main.jsx),
+// and prefer a global SCSS import, you could do it here.
+// However, JS import is generally recommended for CSS related to JS libraries.
+// @import 'react-toastify/dist/ReactToastify.css';

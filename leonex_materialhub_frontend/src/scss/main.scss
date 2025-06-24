@@ -1,0 +1,34 @@
+// src/scss/main.scss
+
+// 1. Utilities (Variables, Mixins, Functions first)
+@use "utils/variables" as var;
+@use "utils/mixins" as mix;
+// @use "utils/animations";
+
+// 2. Base & Global Styles
+@use "typography";
+@use "base";
+@use "buttons";
+
+// 3. Layout specific
+@use "layout/container";
+@use "layout/forms";
+
+// 4. Components (Import SCSS files from src/components/*)
+// Corrected relative paths: ../components/ instead of ../../components/
+@use "../components/_TopBar.scss";
+@use "../components/_ImageUploadField.scss";
+@use "../components/_StatCard.scss";
+// Add other common components' SCSS here, e.g.:
+// @use "../components/_MaterialSearchBar.scss";
+// @use "../components/_MaterialDetails.scss";
+
+// 5. Pages (Import SCSS files from src/pages/*)
+// Corrected relative paths: ../pages/ instead of ../../pages/
+@use "../pages/_LoginPage.scss";
+@use "../pages/_DashboardPage.scss";
+@use "../pages/_MaterialCodePage.scss";
+@use "../pages/_MaterialDataFormPage.scss";
+@use "../pages/_MaterialStatusPage.scss";
+@use "../pages/ExportDataPage";
+// @use "../pages/_ExportDataPage.scss";

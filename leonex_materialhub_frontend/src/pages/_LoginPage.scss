@@ -1,0 +1,107 @@
+// src/pages/_LoginPage.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "../scss/buttons"; // For .btn, .btn-primary
+@use "sass:color"; // Not strictly used here but good practice if you add color functions
+
+.login-page {
+  @include mix.flex-center; // Center the login form container
+  // Calculate min-height to roughly center content vertically,
+  // accounting for a TopBar (assumed 70px) and some overall page padding.
+  // var.$spacer-5 is 2rem (32px), a good candidate for 'xl' page padding.
+  min-height: calc(
+    100vh - 70px - var.$spacer-5
+  ); // Corrected: Was var.$spacer-xl
+  padding: var.$spacer-4; // Corrected: Was var.$spacer-lg. Overall page padding.
+  width: 100%; // Ensure it takes full width for flex centering to work
+
+  .login-form-container {
+    // Use the card mixin for consistent card styling.
+    // Default card padding is var.$spacer-4 from the mixin.
+    // Default card margin-bottom is var.$spacer-4 from the mixin, which is fine here.
+    @include mix.card-style(
+      $padding: var.$spacer-5
+    ); // More padding inside login card
+    width: 100%;
+    max-width: 450px; // Max width for the login form
+    text-align: center; // Center text elements like h1 if not explicitly aligned
+
+    .login-logo {
+      // Optional: if you have a logo above the form
+      display: block;
+      max-width: 150px; // Adjust as needed
+      margin: 0 auto var.$spacer-4;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: var.$spacer-5; // Corrected: Was var.$spacer-xl. More space after title.
+      font-size: 1.75rem; // Slightly adjusted title size
+      color: var.$text-primary;
+      font-weight: var.$font-weight-semibold;
+    }
+
+    // .form-group and .form-control will be styled by _forms.scss
+    // You might add specific overrides for login form inputs if needed:
+    .form-group {
+      margin-bottom: var.$spacer-4; // Consistent spacing for login form groups
+    }
+    .form-control {
+      // Example: Slightly larger inputs for login
+      // padding-top: calc(var.$spacer-3 + var.$spacer-1);
+      // padding-bottom: calc(var.$spacer-3 + var.$spacer-1);
+      // font-size: 1.05rem;
+    }
+
+    // Login-specific error message display (if not using toasts exclusively)
+    .login-error-message {
+      // Similar to .form-submission-error from _forms.scss but can be specific
+      background-color: color.adjust(var.$danger, $alpha: -0.9);
+      color: var.$danger;
+      padding: var.$spacer-3;
+      border-radius: var.$border-radius;
+      margin-bottom: var.$spacer-4;
+      font-size: 0.9rem;
+      border: var.$border-width solid color.adjust(var.$danger, $alpha: -0.5);
+      text-align: left; // Align text to left for readability
+      display: flex;
+      align-items: center;
+      svg {
+        margin-right: var.$spacer-2;
+        font-size: 1.2em;
+      }
+    }
+
+    button[type="submit"].btn-login {
+      // Add a specific class for more control
+      @extend .btn;
+      @extend .btn-primary;
+      @extend .btn-lg; // Make login button large
+      width: 100%;
+      margin-top: var.$spacer-3; // Corrected: Was var.$spacer-md. Space above button.
+      // Padding is handled by .btn-lg
+      // font-size will be from .btn-lg
+      // letter-spacing: 0.5px; // Optional: subtle letter spacing
+      // text-transform: uppercase; // Optional: uppercase text
+    }
+
+    .form-footer-links {
+      // For "Forgot password?" or "Sign up" links
+      margin-top: var.$spacer-4;
+      font-size: var.$font-size-sm;
+      text-align: center;
+      a {
+        color: var.$text-secondary;
+        text-decoration: underline;
+        &:hover {
+          color: var.$primary;
+        }
+      }
+      span {
+        // For separators like " | "
+        margin: 0 var.$spacer-1;
+        color: var.$text-muted;
+      }
+    }
+  }
+}
