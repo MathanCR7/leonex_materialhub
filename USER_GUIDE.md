@@ -1,8 +1,8 @@
-# Leonex Material Hub - User Guide
+# Stock and Inventory Management - User Guide
 
-Welcome to the Leonex Material Hub! This guide will help you understand how to use the application based on your assigned role.
+Welcome to the Stock and Inventory Management! This guide will help you understand how to use the application based on your assigned role.
 
-The Material Hub is a system designed to help track and assess the condition of materials in different plants. It uses material codes to identify items and allows users to report their status, including defects and missing items.
+The Stock and Inventory Management is a system designed to help track and assess the condition of materials in different plants. It uses material codes to identify items and allows users to report their status, including defects and missing items.
 
 ## 📖 Table of Contents
 
@@ -38,7 +38,7 @@ The Material Hub is a system designed to help track and assess the condition of 
 
 ## 1. Logging In
 
-To access the Leonex Material Hub, you will need a username and password provided by your administrator.
+To access the Stock and Inventory Management, you will need a username and password provided by your administrator.
 
 1.  Open the application URL in your web browser.
 2.  Enter your **Username** and **Password** in the login form.
