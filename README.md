@@ -136,7 +136,7 @@ Sensitive configurations, database credentials, API keys, and external URLs are 
 
     ```bash
     cd backend
-    npm start # or npm run dev (depending on your package.json scripts)
+    node server.js
     ```
 
     The backend API should now be running, typically on the port specified in your `.env` file (e.g., 5001).
