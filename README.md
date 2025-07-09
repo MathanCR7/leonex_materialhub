@@ -1,74 +1,79 @@
 # Stock and Inventory Management
 
-<!-- Optional: Add a relevant badge here, e.g., a build status badge -->
+<!-- Optional: Add relevant badges here, e.g., build status, license, version -->
 <!-- ![Build Status](https://img.shields.io/badge/build-passing-brightgreen) -->
+<!-- ![Version](https://img.shields.io/badge/version-1.0.0-blue) -->
 <!-- ![License](https://img.shields.io/badge/license-MIT-blue.svg) -->
 
-Welcome to the **Stock and Inventory Management** repository! This project is a web-based platform designed to provide a robust solution for managing inventory, tracking stock conditions and defects, and facilitating cost estimation processes within a multi-plant organization. It focuses on precise item code identification, detailed condition classification, and role-based access control to manage stock levels and conditions, supporting informed decisions regarding recovery, disposition, or sale based on item status.
+## 👋 Welcome to the Stock and Inventory Management Project!
 
-Built with a modern stack including **React**, **Node.js/Express**, and utilizing **MySQL** for data persistence, this system aims to streamline complex inventory workflows.
+This project provides a sophisticated web-based platform designed to revolutionize how organizations manage their physical inventory across multiple locations (plants/warehouses). Going beyond simple stock counts, this system focuses on **detailed condition tracking**, **defect management**, and **cost estimation** to support informed decisions for inventory disposition, potential recovery, or stock selling. By leveraging precise item code identification and a robust role-based access control system, it streamlines workflows and enhances visibility throughout the inventory lifecycle.
 
-## ✨ Features
+Built with a powerful and modern **React (with Vite)** frontend, a flexible **Node.js/Express** backend, and a reliable **MySQL** database, this application is designed for scalability and performance in a multi-plant environment.
 
-The Stock and Inventory Management platform offers distinct functionalities tailored to different user roles and core inventory processes:
+## ✨ Key Features
 
-### Core Inventory & Condition Management
+The Stock and Inventory Management platform offers a comprehensive suite of features tailored to its core function and different user responsibilities:
 
--   **Stock Condition Cataloguing:** Detailed review and classification of inventory items based on their physical and packaging condition (Good, Package Defect, Physical Defect, Other Defect, Missing).
--   **Defect Tracking:** Specific recording of package, physical, and other defects, including root causes, detailed descriptions, and supporting imagery.
--   **Image & Video Uploads:** Comprehensive media attachment capabilities for documenting inventory item conditions, including specific views for good materials and multiple images for documenting defects.
--   **Calculated Missing Stock:** Automatic calculation of missing items by comparing the system's Stock On Hand (SOH) quantity with the sum of quantities classified into different conditions.
--   **Item Code Identification:** Centralized management and precise identification of inventory items via unique item codes.
+### Core Inventory Lifecycle Management
 
-### Role-Based Access & Functionality
+-   **Comprehensive Stock Condition Cataloguing:** Accurately classify inventory items based on detailed conditions: Good, Package Defect, Physical Defect, Other Defect, and Missing. This granular classification is key for valuation and disposition.
+-   **Detailed Defect Tracking:** Go beyond just noting defects. Record specific types (Package, Physical, Other), capture reasons, add descriptive notes, and upload supporting media (images, videos).
+-   **Rich Media Attachments:** Easily upload images and videos to visually document the condition of items, providing clear evidence for good stock and specific defects. Supports multiple images per item/defect.
+-   **Automated Missing Stock Calculation:** The system automatically calculates the quantity of 'Missing' items based on the difference between the expected Stock On Hand (SOH) and the sum of quantities classified into 'Good', 'Package Defect', 'Physical Defect', and 'Other Defect' conditions.
+-   **Precise Item Code Identification:** Centralized management and lookup of unique item codes ensure accuracy and consistency across the inventory.
 
-#### 👑 Admin
+### Role-Based Access & Workflow
 
--   **Centralized Plant Management:** Configure and manage details of all operational plants or warehouse locations.
--   **Item Code Management:** Insert, update, and manage the master list of item codes and their details.
--   **User Management:** Create, edit, and manage user accounts (Cataloguers, Third Parties), assigning specific roles.
--   **User Assignment & Access Control:** Assign users to specific plants, controlling their access and permissions securely via JWT.
--   **Account Activation/Deactivation:** Control user account status and set expiry dates for enhanced security.
--   **Full Inventory Data Visibility:** View all stock data, condition submissions, and defect details across all plants.
--   **Cost Estimation Oversight:** View and manage all cost estimations submitted by Third Parties for any item code.
--   **Comprehensive Reporting & Statistics (Dashboard):** Access aggregated data, key performance indicators, and statistics across the entire platform for informed decision-making related to inventory and potential stock sell/disposition.
+The platform securely manages user access and functionality based on assigned roles:
 
-#### 📦 Cataloguer
+#### 👑 Admin - Full Control & Oversight
 
--   **Restricted Plant Access:** Access and process only inventory items and submissions associated with their assigned plant(s).
--   **Stock Condition Review & Submission:** Locate assigned item codes, physically verify stock, fill out the detailed condition form (quantities per condition, defect reasons, media uploads), and submit the findings for review and potential estimation.
--   **View Own Submissions:** Track the status and details of inventory items they have classified and submitted.
+-   **Plant/Location Management:** Define and manage all operational plants or warehouse locations within the system.
+-   **Master Item Code Management:** Maintain the master list of all item codes, including adding new items and updating details.
+-   **User Account Management:** Create, edit, and manage user accounts with specific roles (Cataloguer, Third Party).
+-   **Secure User Assignment & Access:** Assign users to specific plants, limiting their access accordingly, secured via JWT.
+-   **Account Lifecycle Management:** Activate, deactivate, or set expiry dates for user accounts.
+-   **Global Data Visibility:** Access and view all inventory data, condition submissions, and defect details from *all* plants.
+-   **Cost Estimation Review:** View and manage all cost estimations submitted by Third Parties for any item code.
+-   **Analytical Dashboard:** Access aggregated reports and statistics providing insights into inventory status, defect trends, and classification progress across the platform.
 
-#### 🤝 Third Party
+#### 📦 Cataloguer - Inventory Condition Experts
 
--   **Restricted Submission Access:** Access only inventory submissions from plants they are assigned to, potentially limited to submissions pending their estimation.
--   **Cost Estimation Input:** Provide cost estimations or valuation inputs for material submissions based on their classified condition (Good, Package Defect, Physical Defect, Other Defect), aiding potential stock sell or recovery decisions.
--   **View Own Estimations:** See the cost estimates they have previously submitted.
--   **Dashboard Statistics (Limited):** View relevant statistics, potentially related to items requiring estimation or completed estimations.
+-   **Plant-Specific Access:** Limited access to view and process only inventory items assigned to their specific plant(s).
+-   **Stock Review & Submission:** Locate assigned item codes within their plant, physically inspect stock, fill out the detailed condition form (quantities per condition, defect details, media uploads), and submit their findings for classification.
+-   **Submission Tracking:** View the status and details of inventory items they have personally classified and submitted.
+
+#### 🤝 Third Party - Valuation & Estimation
+
+-   **Restricted Submission Access:** Access only inventory submissions from plants they are assigned to, typically limited to submissions pending their expert valuation or cost estimation.
+-   **Cost Estimation Input:** Provide detailed cost estimations or valuation inputs for classified items (Good, Package Defect, Physical Defect, Other Defect), which aids in decisions regarding stock selling, recovery, or write-off.
+-   **Estimation History:** View the cost estimates they have previously submitted.
+-   **Limited Dashboard:** Access relevant statistics pertinent to items requiring estimation or estimates they have completed.
 
 ## 🛠️ Tech Stack
 
-This project is built using the following modern technologies:
+This project is built using a robust and popular stack for modern web applications:
 
--   **Frontend:** **React** (for building a dynamic and responsive user interface)
--   **Backend:** **Node.js** with **Express.js** (for building RESTful APIs, handling authentication, and business logic)
--   **Database:** **MySQL** (a robust and widely-used relational database for storing inventory data, user information, submissions, and estimations)
--   **Authentication:** **JWT (JSON Web Tokens)** (for secure API endpoint access and managing user sessions/permissions)
--   **File Storage:** Local filesystem or cloud storage services like AWS S3, Google Cloud Storage (for storing uploaded images and videos)
+-   **Frontend:** **React** (A powerful JavaScript library for building user interfaces) powered by **Vite** (A next-generation frontend tooling that provides a blazing fast development experience).
+-   **Backend:** **Node.js** (A JavaScript runtime) with the **Express.js** framework (A minimalist web application framework for building RESTful APIs).
+-   **Database:** **MySQL** (A widely-used, reliable, and powerful open-source relational database management system for structured data storage).
+-   **Authentication:** **JWT (JSON Web Tokens)** for secure, stateless authentication and authorization.
+-   **File Storage:** Utilizes local filesystem storage (with potential for cloud integration like AWS S3, Google Cloud Storage in future enhancements) for managing uploaded media files.
 
-This combination provides a powerful, scalable, and maintainable architecture suitable for enterprise-level inventory management.
+This combination offers flexibility, performance, and scalability for your inventory management needs.
 
 ## 🚀 Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+Follow these steps to get the Stock and Inventory Management application running on your local machine for development and testing.
 
 ### Prerequisites
 
--   Node.js and npm or yarn installed
+-   Node.js (LTS version recommended) and npm or yarn installed
 -   A running MySQL database server instance
 -   Git
 
-### Installation
+### Installation Steps
 
 1.  **Clone the repository:**
 
@@ -80,26 +85,26 @@ These instructions will get you a copy of the project up and running on your loc
 2.  **Set up Backend:**
 
     ```bash
-    # Navigate to the backend directory (assuming a standard structure like '/backend')
+    # Navigate to the backend directory (assuming your backend code is in a 'backend' folder)
     cd backend
     npm install # or yarn install
     ```
 
-    -   Create a `.env` file in the backend root based on a provided `.env.example`. Configure your MySQL database connection, JWT secret, file storage paths, etc.
-    -   Run database migrations to set up the necessary tables: `npm run migrate` (command may vary based on your ORM/setup).
-    -   Seed initial data (e.g., initial admin user, some plants, sample item codes if needed): `npm run seed` (command may vary).
+    -   Create a `.env` file in the `backend` root directory. Copy the contents from `.env.example` (which should be provided in the repo) and fill in your specific configuration details, especially the MySQL database connection.
+    -   Run database migrations to set up the necessary tables in your MySQL database. The specific command depends on your ORM or migration tool (e.g., `npm run migrate` or similar).
+    -   Run seeders (if available) to populate the database with initial data like an admin user, some plants, or sample item codes (e.g., `npm run seed` or similar).
 
 3.  **Set up Frontend:**
     ```bash
-    # Navigate to the frontend directory (assuming a standard structure like '/frontend')
+    # Navigate to the frontend directory (assuming your frontend code is in a 'frontend' folder)
     cd ../frontend
     npm install # or yarn install
     ```
-    -   Create a `.env` file in the frontend root for the backend API URL, etc.
+    -   Create a `.env` file in the `frontend` root directory based on `.env.example`. Configure variables like the backend API URL. Remember that for Vite, environment variables exposed to the browser must be prefixed with `VITE_`.
 
 ### Configuration (.env Files)
 
-Sensitive configurations, database credentials, API keys, and external URLs are managed via `.env` files. Example files (`.env.example`) should be provided to help you set up. **Do not commit your actual `.env` files to version control.**
+Sensitive configurations, database credentials, API keys, and external URLs are managed via `.env` files. **Crucially, never commit your actual `.env` files to version control (they should be ignored by `.gitignore`).** Example files (`.env.example`) should guide you.
 
 *   **Backend Configuration (`backend/.env`):** Create this file from `backend/.env.example` and fill in your specific details.
     ```dotenv
@@ -114,20 +119,21 @@ Sensitive configurations, database credentials, API keys, and external URLs are 
     PORT=5001 # Port for the backend API server
 
     # Authentication
-    JWT_SECRET=your_super_secret_jwt_token # <-- IMPORTANT: CHANGE THIS to a strong, unique, random value! Secret key for signing JWTs.
+    JWT_SECRET=your_super_secret_jwt_token # <-- IMPORTANT: CHANGE THIS to a strong, unique, random value! Used for signing JWTs.
 
     # File Storage
-    # Configure base URL where uploaded media files can be accessed and the local storage path
+    # Configure the base URL where uploaded media files can be accessed and the local storage path
     MEDIA_BASE_URL=http://localhost:5001/media # Base URL for serving media (match backend port)
     FILE_UPLOAD_DESTINATION=./uploads/ # Local path where files will be stored (relative to backend root)
 
     # CORS Settings
     CORS_ORIGIN=http://localhost:5173 # Frontend URL allowed to access the API (for development CORS)
     ```
-*   **Frontend Configuration (`frontend/.env`):** Create this file from `frontend/.env.example` and fill in your specific details. (Note: If using Vite, variable names must be prefixed with `VITE_`).
+*   **Frontend Configuration (`frontend/.env`):** Create this file from `frontend/.env.example` and fill in your specific details.
     ```dotenv
     # API Configuration
-    VITE_API_URL=http://localhost:5001/api # Base URL for the backend API (match backend port and API path)
+    # Base URL for the backend API - MUST match the backend's port and path
+    VITE_API_URL=http://localhost:5001/api
     ```
 
 ### Running the Application
@@ -136,21 +142,23 @@ Sensitive configurations, database credentials, API keys, and external URLs are 
 
     ```bash
     cd backend
-    node server.js
+    node server.js # Use the command specified in your backend setup
+    # Alternative commonly used commands: npm start OR npm run dev
     ```
 
-    The backend API should now be running, typically on the port specified in your `.env` file (e.g., 5001).
+    The backend API should now be running, typically on the port specified in your backend `.env` file (e.g., 5001).
 
-2.  **Start the Frontend Development Server:**
+2.  **Start the Frontend Development Server (using Vite):**
     ```bash
     cd frontend
-    npm start # or yarn start (depending on your package.json scripts)
+    npm run dev # Standard command for Vite development server
+    # Alternative if using yarn: yarn dev
     ```
-    The frontend application should open in your browser, typically on a port like 3000, 5173 (Vite default), or 8080.
+    The frontend application should open in your browser, typically on a port like 5173 (Vite default).
 
 ## Initial Testing Credentials
 
-For initial testing and exploration of different user capabilities in the development environment, you can use the following credentials:
+For initial testing and exploration of different user capabilities in the development environment, you can use the following credentials. These accounts are typically created by the database seed script.
 
 *   **Admin**
     *   Username: `admin`
@@ -174,18 +182,30 @@ For initial testing and exploration of different user capabilities in the develo
 These credentials are strictly for **development and testing purposes** within a controlled, non-production environment. **NEVER** use these default credentials or weak passwords in a production system. In a production setup, you must:
 
 *   Implement strong, unique passwords for all users.
-*   Follow secure practices for initial administrative user creation.
-*   Consider disabling or removing default test accounts after setup.
-*   Review and implement appropriate access control, security measures, and data encryption.
+*   Follow secure practices for initial administrative user creation (e.g., creating the first admin via a secure setup process or command-line tool).
+*   Consider disabling or removing default test accounts after setting up your production users.
+*   Review and implement appropriate access control, security measures, input validation, and data encryption practices.
 
 ---
 
+## 📸 Screenshots
+
+*(Suggestion: Add screenshots or GIFs here to showcase the application's UI for different roles.)*
+
+For example:
+
+-   ![Admin Dashboard Screenshot](docs/screenshots/admin-dashboard.png)
+-   ![Cataloguer Submission Form Screenshot](docs/screenshots/cataloguer-form.png)
+-   ![Third Party Estimation Screenshot](docs/screenshots/third-party-estimation.png)
+
+*(Replace the above lines with actual image links once you have screenshots.)*
+
 ## 📚 Documentation
 
--   **For Developers:** Dive into the technical details, architecture, API endpoints, database schema, and advanced setup guides in the [Developer Guide](DEVELOPER_GUIDE.md).
--   **For End-Users:** Learn how to use the application based on your role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDE.md).
+-   **For Developers:** Dive into the technical details, project architecture, API endpoint documentation, database schema, testing procedures, and advanced setup guides in the [Developer Guide](DEVELOPER_GUIDE.md).
+-   **For End-Users:** Learn how to navigate and utilize the application based on your assigned role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDE.md).
 
-*(Note: The `DEVELOPER_GUIDE.md` and `USER_GUIDE.md` files are assumed to exist and contain detailed information.)*
+*(Note: Ensure `DEVELOPER_GUIDE.md` and `USER_GUIDE.md` files exist and contain the relevant detailed information.)*
 
 ## 📄 License
 
@@ -193,7 +213,8 @@ This project is licensed under the [MIT License](LICENSE) (if available) - see t
 
 ## 📞 Contact
 
-If you have any questions, issues, or require further assistance, please feel free to open an issue on this GitHub repository. You can also connect with MATHAN C via [LinkedIn](https://www.linkedin.com/in/mathan-c/) for project-related discussions.
+If you have any questions, encounter issues, or require further assistance, please feel free to open an issue on this GitHub repository. You can also connect with MATHAN C via [LinkedIn](https://www.linkedin.com/in/mathan-c/) for project-related discussions.
 
 ---
+
 Built with ❤️ and Code.
