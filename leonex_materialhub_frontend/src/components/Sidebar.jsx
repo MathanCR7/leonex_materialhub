@@ -17,7 +17,7 @@ import {
   FaTasks,
   FaCalculator, // <<< IMPORT NEW ICON
 } from "react-icons/fa";
-import leonexLogo from "../assets/leonex_logo.png";
+import leonexLogo from "../assets/company_logo.png";
 import "./_Sidebar.scss";
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
