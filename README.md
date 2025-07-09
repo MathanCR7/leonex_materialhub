@@ -1,6 +1,6 @@
 # Leonex Material Hub
 
-![Leonex Material Hub Banner Placeholder](https://via.placeholder.com/1200x300?text=Leonex+Material+Hub)
+
 
 Welcome to the Leonex Material Hub repository! This project is a web-based platform designed to streamline the material cataloguing, defect tracking, and third-party cost estimation process within a multi-plant organization. It centers around precise material code identification and role-based access control to manage inventory conditions and facilitate potential recovery or disposition decisions.
 
@@ -90,6 +90,41 @@ These instructions will get you a copy of the project up and running on your loc
     ```
     - Create a `.env` file in the frontend root for API URLs, etc.
 
+
+### Configuration (.env Files)
+
+Sensitive configurations, database credentials, API keys, and external URLs are managed via `.env` files. Example files are provided to help you set up.
+
+*   **Backend Configuration (`backend/.env`):** Create this file from `backend/.env.example` and fill in your specific details.
+    ```dotenv
+    # Database connection details (MySQL)
+    DB_HOST=127.0.0.1
+    DB_USER=root
+    DB_PASSWORD=your_db_password # <-- CHANGE THIS!
+    DB_NAME=your_db_name # <-- CHANGE THIS!
+    DB_PORT=3306
+
+    # Backend Server Settings
+    PORT=5001 # Port for the backend API server
+
+    # Authentication
+    JWT_SECRET=your_jwt_secret_token # <-- CHANGE THIS to a strong, unique value! Secret key for signing JWTs.
+
+    # File Storage
+    MEDIA_BASE_URL=http://localhost:5001/media # Base URL where uploaded media files can be accessed
+    FILE_UPLOAD_DESTINATION=./uploads/ # Local path where files will be stored (relative to backend root)
+
+    # CORS Settings
+    CORS_ORIGIN=http://localhost:5173 # Frontend URL allowed to access the API (for development CORS)
+    ```
+*   **Frontend Configuration (`frontend/.env`):** Create this file from `frontend/.env.example` and fill in your specific details. (Note: If using Vite, variable names must be prefixed with `VITE_`).
+    ```dotenv
+    # API Configuration
+    VITE_API_URL=http://localhost:5001/api # Base URL for the backend API
+    ```
+
+
+
 ### Running the Application
 
 1.  **Start the Backend Server:**
@@ -120,11 +155,8 @@ For initial testing and exploration of the Admin capabilities:
 ## 📚 Documentation
 
 - **For Developers:** Dive into the technical details, architecture, API endpoints, and setup guides in the [Developer Guide](DEVELOPER_GUIDE.md).
-- **For End-Users:** Learn how to use the application based on your role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDER.md).
+- **For End-Users:** Learn how to use the application based on your role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDE.md).
 
-## 🤝 Contributing
-
-Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) (if available) for guidelines on how to contribute to this project.
 
 ## 📄 License
 
