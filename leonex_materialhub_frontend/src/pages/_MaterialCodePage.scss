@@ -1,241 +1,172 @@
 // src/pages/_MaterialCodePage.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
-@use "sass:color";
 
 .material-code-page {
-  // .page-header, h1, .page-subtitle should be styled globally or in a layout SCSS
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
 
   .search-bar-wrapper {
-    @include mix.card-style(
-      $padding: var.$spacer-3,
-      $margin-bottom: var.$spacer-5
-    );
-    position: relative; // For spinner or other absolute elements inside
+    // FIX: Declarations moved before the @include to prevent warnings.
+    margin-bottom: var.$spacer-5;
+    position: sticky;
+    top: var.$spacer-4;
+    z-index: 10;
+    @include mix.card-style($padding: 0); // Default padding set to 0
   }
 
   .search-bar-container {
     display: flex;
     align-items: center;
-    background-color: var.$surface-color; // Could be slightly different than card if needed
-    border: var.$border-width solid var.$muted-border-color;
-    border-radius: var.$border-radius;
-    padding-left: var.$spacer-3;
-    transition: border-color var.$transition-duration-short,
-      box-shadow var.$transition-duration-short;
-
-    &:focus-within {
-      border-color: var.$primary;
-      box-shadow: var.$box-shadow-focus;
-    }
-
     .search-icon {
       color: var.$text-muted;
+      margin: 0 var.$spacer-3;
       font-size: 1.1rem;
-      margin-right: var.$spacer-2;
-      flex-shrink: 0;
-    }
-
-    .search-input {
-      flex-grow: 1;
-      padding: var.$spacer-3 var.$spacer-2;
-      font-size: 1rem;
-      border: none;
-      outline: none;
-      background-color: transparent;
-      color: var.$text-primary;
-      width: 100%; // Ensure it takes available space
-
-      @include mix.placeholder {
-        color: var.$text-muted;
-        font-style: italic;
+      @include mix.screen-breakpoint(md) {
+        margin: 0 var.$spacer-4;
+        font-size: 1.2rem;
       }
     }
-
+    .search-input.form-control {
+      border: none;
+      box-shadow: none;
+      padding-top: var.$spacer-3;
+      padding-bottom: var.$spacer-3;
+      font-size: 1rem;
+      &:focus {
+        box-shadow: none;
+      }
+      @include mix.screen-breakpoint(md) {
+        font-size: 1.1rem;
+        padding-top: var.$spacer-4;
+        padding-bottom: var.$spacer-4;
+      }
+    }
     .spinner-icon {
+      margin-right: var.$spacer-4;
       color: var.$primary;
-      font-size: 1.2rem; // Slightly larger spinner
-      margin-left: var.$spacer-2; // Space from input
-      margin-right: var.$spacer-3; // Space from container edge
-      animation: spin 0.8s linear infinite;
-      flex-shrink: 0;
     }
   }
 
-  .search-message {
-    padding: var.$spacer-3;
-    margin-top: var.$spacer-3;
-    border-radius: var.$border-radius;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    border-width: var.$border-width;
-    border-style: solid;
-
-    svg {
-      margin-right: var.$spacer-2;
-      font-size: 1.3em;
-      flex-shrink: 0;
-    }
-
-    &.alert-danger,
-    &.error-message {
-      // Allow both classes
-      background-color: color.adjust(var.$danger, $alpha: -0.9);
-      color: color.adjust(var.$danger, $lightness: -10%);
-      border-color: color.adjust(var.$danger, $alpha: -0.7);
-    }
-    &.alert-info,
-    &.info-message {
-      background-color: color.adjust(var.$info, $alpha: -0.9);
-      color: color.adjust(var.$info, $lightness: -15%);
-      border-color: color.adjust(var.$info, $alpha: -0.7);
-    }
-    &.alert-warning {
-      // For "no results"
-      background-color: color.adjust(var.$warning, $alpha: -0.85);
-      color: color.adjust(
-        var.$warning,
-        $lightness: -30%
-      ); // Darker text on yellow
-      border-color: color.adjust(var.$warning, $alpha: -0.6);
-    }
-  }
-
-  .suggestions-list.material-code-suggestions {
-    @include mix.reset-list;
-    margin-top: var.$spacer-1; // Closer to search bar
-    border: var.$border-width solid var.$border-color-light;
-    border-radius: var.$border-radius-md; // Consistent with other elements
-    background-color: var.$surface-color;
-    box-shadow: var.$box-shadow-lg; // More prominent shadow for dropdown
-    max-height: 40vh; // Relative to viewport height
+  .suggestions-list {
+    // FIX: Declarations moved before the @include to prevent warnings.
+    list-style: none;
+    max-height: 70vh;
     overflow-y: auto;
-    // position: absolute; // Only if you need it to overlay content, manage width carefully
-    // width: 100%; // If absolute, match search bar container or wrapper
-    z-index: var.$z-index-dropdown;
-
-    // Apply card styling for padding if the UL itself has .card-style
-    &.card-style {
-      padding: 0; // Card style might add padding, reset for list items
-      border: none; // Card style has its own border
-    }
+    margin-top: var.$spacer-4; // Moved declaration before the mixin call
+    @include mix.card-style($padding: 0);
 
     li {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      display: grid;
+      grid-template-areas:
+        "main status"
+        "details details";
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var.$spacer-2 var.$spacer-4;
       padding: var.$spacer-3 var.$spacer-4;
       cursor: pointer;
-      border-bottom: var.$border-width solid var.$border-color-light;
-      transition: background-color var.$transition-duration-short,
-        transform 0.1s ease-out;
+      border-bottom: 1px solid var.$border-color-light;
 
       &:last-child {
         border-bottom: none;
-        border-bottom-left-radius: var.$border-radius-md;
-        border-bottom-right-radius: var.$border-radius-md;
       }
-      &:first-child {
-        border-top-left-radius: var.$border-radius-md;
-        border-top-right-radius: var.$border-radius-md;
-      }
-
       &:hover,
-      &:focus-visible {
-        // Use focus-visible for keyboard nav
-        background-color: color.adjust(var.$primary, $alpha: -0.9);
-        color: var.$primary-dark;
-        transform: translateX(2px); // Subtle shift on hover
+      &:focus-within {
+        background-color: var.$surface-light;
         outline: none;
       }
 
       .suggestion-content-wrapper {
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-        gap: var.$spacer-1;
+        grid-area: main;
+      }
+      .suggestion-status {
+        grid-area: status;
+        justify-self: end;
+      }
+      .suggestion-details {
+        grid-area: details;
       }
 
       .suggestion-main-info {
         .suggestion-code {
-          font-weight: var.$font-weight-semibold;
-          font-size: 1.05em;
-          color: var.$primary-dark; // Use a darker shade of primary for readability
-          margin-bottom: var.$spacer-1;
+          display: flex;
+          align-items: center;
+          gap: var.$spacer-2;
+          strong {
+            color: var.$primary;
+            font-weight: var.$font-weight-medium;
+          }
+          .mask-code-lookup {
+            font-size: var.$font-size-xs;
+            color: var.$text-muted;
+          }
         }
         .suggestion-description {
-          font-size: 0.9em;
+          font-size: var.$font-size-sm;
           color: var.$text-secondary;
-          line-height: var.$line-height-sm;
+          margin-top: var.$spacer-1;
         }
       }
 
       .suggestion-details {
         display: flex;
         flex-wrap: wrap;
-        gap: var.$spacer-2 var.$spacer-3;
-        font-size: 0.85em;
-        color: var.$text-muted;
+        gap: var.$spacer-2;
+        align-items: center;
         margin-top: var.$spacer-2;
 
         .detail-item {
-          display: inline-flex; // Use inline-flex for better alignment with icon
+          display: inline-flex;
           align-items: center;
+          gap: var.$spacer-2;
+          font-size: 0.75rem;
+          padding: 3px 8px;
+          background-color: var.$surface-light;
+          border: 1px solid var.$border-color-light;
+          border-radius: var.$border-radius-sm;
+          color: var.$text-secondary;
           svg {
-            margin-right: var.$spacer-1;
-            color: var.$text-muted; // Icons can share muted color
-            font-size: 1.1em; // Slightly larger icons
-          }
-          &.plant-code-badge {
-            // Specific styling for plant code badge
-            background-color: var.$border-color-light;
-            color: var.$text-secondary;
-            padding: var.$spacer-1 var.$spacer-2;
-            border-radius: var.$border-radius-pill;
-            font-weight: var.$font-weight-medium;
-            border: var.$border-width solid var.$muted-border-color;
+            font-size: 0.8rem;
           }
         }
       }
 
-      .suggestion-status {
-        margin-left: var.$spacer-3;
-        white-space: nowrap;
-        align-self: center; // Center vertically
+      .suggestion-status .status-badge {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+        font-weight: var.$font-weight-bold;
+        border-radius: var.$border-radius-pill;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
 
-        .status-badge {
-          padding: calc(var.$spacer-1 * 1.5) var.$spacer-2; // Balanced padding
-          font-size: 0.75em;
-          font-weight: var.$font-weight-bold;
-          border-radius: var.$border-radius-pill; // Pill shape
-          text-transform: uppercase;
-          letter-spacing: 0.5px; // Slight letter spacing
-          min-width: 100px; // Ensure badges have some consistent width
-          text-align: center;
-
-          &.completed {
-            background-color: var.$success;
-            color: var.$text-on-success;
-            box-shadow: 0 1px 3px
-              rgba(color.scale(var.$success, $blackness: 50%), 0.3);
-          }
-          &.not-completed,
-          &.in-progress {
-            // Allow 'in-progress' class too
-            background-color: var.$warning;
-            color: var.$text-on-warning;
-            box-shadow: 0 1px 3px
-              rgba(color.scale(var.$warning, $blackness: 50%), 0.3);
-          }
-          &.no-submission {
-            background-color: var.$secondary-light;
-            color: var.$text-secondary;
-            box-shadow: 0 1px 3px
-              rgba(color.scale(var.$secondary, $blackness: 50%), 0.2);
-          }
+        &.completed {
+          background-color: var.$success;
+        }
+        &.not-completed {
+          background-color: var.$warning;
+          color: var.$text-primary;
+        }
+        &.no-submission {
+          background-color: var.$border-color;
+          color: var.$text-secondary;
         }
       }
     }
+  }
+}
+
+// Media query to apply specific padding on larger screens
+@media (min-width: 768px) {
+  .material-code-page .search-bar-wrapper {
+    // The @include mix.card-style($padding: 0) already sets padding to 0.
+    // If you intended different padding here, you would override it.
+    // Since the request was to set padding 0 and the mixin does that,
+    // this block might not be strictly needed unless you want to emphasize
+    // that the 0 padding applies specifically >768px, but the mixin handles it generally.
+    // Keeping it explicit as requested in the previous prompt, even if redundant with mixin default.
+    padding: 0;
   }
 }

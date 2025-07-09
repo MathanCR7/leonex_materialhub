@@ -7,129 +7,99 @@ import {
   FaEye,
   FaSortAmountDown,
   FaSortAmountUp,
-  FaExclamationCircle, // Added for consistency in error display
+  FaExclamationCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import _ from "lodash";
-import "./_MaterialStatusPage.scss"; // Assuming SCSS file
+import Pagination from "../components/Pagination";
+import "./_MaterialStatusPage.scss";
 
 const MaterialStatusPage = () => {
   const [submissions, setSubmissions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("created_at"); // Default sort
-  const [sortOrder, setSortOrder] = useState("DESC"); // Default order
+  const [sortBy, setSortBy] = useState("updated_at"); // Default sort by last update
+  const [sortOrder, setSortOrder] = useState("DESC");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 10;
 
-  const fetchSubmissions = useCallback(async () => {
-    setIsLoading(true);
-    setError("");
-    try {
-      const params = {
-        search: searchTerm.trim(), // Trim search term before sending
-        sortBy,
-        sortOrder,
-        page: currentPage,
-        limit: itemsPerPage,
-      };
-      const response = await getCompletedSubmissions(params);
-      setSubmissions(response.data.data || []);
-      setTotalPages(response.data.totalPages || 1);
-      setTotalItems(response.data.totalItems || 0);
-      setCurrentPage(response.data.currentPage || 1); // Ensure current page from response is used
-      if ((response.data.data || []).length === 0 && searchTerm.trim() !== "") {
-        setError("No completed submissions found matching your criteria.");
+  const fetchSubmissions = useCallback(
+    async (pageToFetch) => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const params = {
+          search: searchTerm.trim(),
+          sortBy,
+          sortOrder,
+          page: pageToFetch,
+          limit: itemsPerPage,
+        };
+        const response = await getCompletedSubmissions(params);
+        setSubmissions(response.data.data || []);
+        setTotalPages(response.data.totalPages || 1);
+        setTotalItems(response.data.totalItems || 0);
+        setCurrentPage(response.data.currentPage || 1);
+        if (
+          (response.data.data || []).length === 0 &&
+          searchTerm.trim() !== ""
+        ) {
+          setError("No completed submissions found matching your criteria.");
+        }
+      } catch (err) {
+        console.error("Error fetching completed submissions:", err);
+        const errorMessage =
+          err.response?.data?.message || "Failed to fetch completed materials.";
+        setError(errorMessage);
+        toast.error(errorMessage);
+        setSubmissions([]);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      console.error("Error fetching completed submissions:", err);
-      const errorMessage =
-        err.response?.data?.message || "Failed to fetch completed materials.";
-      setError(errorMessage);
-      toast.error(errorMessage);
-      setSubmissions([]); // Clear submissions on error
-    } finally {
-      setIsLoading(false);
-    }
-  }, [searchTerm, sortBy, sortOrder, currentPage, itemsPerPage]); // itemsPerPage is constant, but good to list
-
-  // Initial fetch and fetch on sort/page change
-  useEffect(() => {
-    fetchSubmissions();
-  }, [sortBy, sortOrder, currentPage, fetchSubmissions]); // fetchSubmissions itself has searchTerm as dep
-
-  // Debounced search term handling
-  const debouncedFetch = useCallback(
-    _.debounce((currentSearchTerm) => {
-      // If search term changes, reset to page 1
-      // Check if currentPage needs to be reset only if search term actually changed
-      // This is implicitly handled if fetchSubmissions is called with new searchTerm & currentPage=1
-      setCurrentPage(1);
-      // fetchSubmissions will be called by the effect below or directly if preferred
-      // For direct call:
-      // fetchSubmissions(); // but ensure `searchTerm` state is already updated for `fetchSubmissions`
-    }, 700),
-    [] // No dependencies, as it's a stable debouncer function
+    },
+    [searchTerm, sortBy, sortOrder]
   );
 
+  const debouncedFetch = useCallback(
+    _.debounce((page) => fetchSubmissions(page), 500),
+    [fetchSubmissions]
+  );
+
+  useEffect(() => {
+    debouncedFetch(1); // Reset to page 1 on search
+    return debouncedFetch.cancel;
+  }, [searchTerm, debouncedFetch]);
+
+  useEffect(() => {
+    fetchSubmissions(currentPage);
+  }, [sortBy, sortOrder, currentPage, fetchSubmissions]);
+
   const handleSearchChange = (e) => {
-    const newSearchTerm = e.target.value;
-    setSearchTerm(newSearchTerm);
-    debouncedFetch(newSearchTerm); // Pass the new term to the debounced function
+    setSearchTerm(e.target.value);
   };
 
-  // Effect to trigger fetch when searchTerm state is updated by debounced handler
-  // This might be slightly redundant if debouncedFetch directly calls fetchSubmissions
-  // after setting currentPage. Let's simplify: debouncedFetch will set page and then fetchSubmissions's
-  // own useEffect hook (which depends on currentPage) will trigger the fetch.
-  // Or, more directly:
-  useEffect(() => {
-    // This effect ensures that if searchTerm *actually changes state*
-    // (after debounce logic completes and sets it),
-    // and currentPage is reset, fetchSubmissions is called.
-    // The previous debouncedFetch directly calling fetchSubmissions might be cleaner.
-    // Let's adjust to this:
-    const handler = setTimeout(() => {
-      if (searchTerm !== undefined) {
-        // To avoid initial fire if searchTerm starts undefined
-        setCurrentPage(1); // Always reset to page 1 for a new search query
-        // fetchSubmissions(); // This will be triggered by useEffect depending on currentPage and other params
-      }
-    }, 700); // This timeout is for the debounce effect on typing
-
-    return () => clearTimeout(handler);
-  }, [searchTerm]); // Only on searchTerm changes
-
   const handleSort = (newSortBy) => {
-    setCurrentPage(1); // Reset to first page on sort change
-    if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === "ASC" ? "DESC" : "ASC");
-    } else {
-      setSortBy(newSortBy);
-      setSortOrder("DESC");
-    }
-    // fetchSubmissions will be called by its useEffect dependency on sortBy/sortOrder/currentPage
+    const newOrder =
+      sortBy === newSortBy && sortOrder === "DESC" ? "ASC" : "DESC";
+    setSortBy(newSortBy);
+    setSortOrder(newOrder);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   const handleViewDetails = (submission) => {
-    if (!submission.plant) {
-      toast.error("Submission is missing plant code. Cannot view details.");
-      console.error("Clicked submission missing plant code:", submission);
-      return;
-    }
-    // Navigate to the MaterialDataFormPage in view mode for this submission
-    // Pass plantCode as a query parameter
-    navigate(
-      `/material-form/${submission.material_code}?plantCode=${submission.plant}`,
-      {
-        state: { submissionId: submission.id, viewOnly: true },
-      }
-    );
+    // New navigation to the dedicated inspection page
+    navigate(`/inspection/${submission.id}`);
   };
 
   const renderSortIcon = (columnName) => {
@@ -144,7 +114,9 @@ const MaterialStatusPage = () => {
       <header className="page-header">
         <h1>Completed Material Submissions</h1>
         <p className="page-subtitle">
-          Overview of all materials marked as complete.
+          {user.role === "cataloguer"
+            ? "Showing completed submissions for your assigned plants."
+            : "Overview of all materials marked as complete."}
         </p>
       </header>
 
@@ -153,29 +125,25 @@ const MaterialStatusPage = () => {
           <FaSearch className="search-icon" />
           <input
             type="text"
-            placeholder="Search by Code, Description, Plant, Category..."
+            placeholder="Search by Code, Description, Plant..."
             value={searchTerm}
             onChange={handleSearchChange}
-            className="search-input form-control" // Added form-control for consistency
+            className="search-input form-control"
           />
         </div>
-        {/* More advanced filters could go here */}
       </div>
 
       {isLoading && (
         <div className="loading-indicator">
-          <FaSpinner className="spinner-icon large-spinner" />{" "}
+          <FaSpinner className="spinner-icon large-spinner" />
           <p>Loading submissions...</p>
         </div>
       )}
-      {error &&
-        !isLoading && ( // Show error only if not loading
-          <div className="error-message alert alert-warning full-width-error">
-            {" "}
-            {/* Changed to alert-warning for no results */}
-            <FaExclamationCircle /> {error}
-          </div>
-        )}
+      {error && !isLoading && (
+        <div className="error-message alert alert-warning full-width-error">
+          <FaExclamationCircle /> {error}
+        </div>
+      )}
 
       {!isLoading && !error && submissions.length > 0 && (
         <>
@@ -186,20 +154,20 @@ const MaterialStatusPage = () => {
                   <th onClick={() => handleSort("material_code")}>
                     Material Code {renderSortIcon("material_code")}
                   </th>
+                  {user.role === "admin" && (
+                    <th onClick={() => handleSort("mask_code")}>
+                      Mask Code {renderSortIcon("mask_code")}
+                    </th>
+                  )}
                   <th>Description Snapshot</th>
                   <th onClick={() => handleSort("plant")}>
-                    {" "}
-                    {/* Sort by plant code */}
                     Plant {renderSortIcon("plant")}
                   </th>
-                  <th onClick={() => handleSort("category")}>
-                    Category {renderSortIcon("category")}
-                  </th>
-                  <th onClick={() => handleSort("created_at")}>
-                    Submitted {renderSortIcon("created_at")}
-                  </th>
                   <th onClick={() => handleSort("submitted_by_username")}>
-                    By {renderSortIcon("submitted_by_username")}
+                    Updated By {renderSortIcon("submitted_by_username")}
+                  </th>
+                  <th onClick={() => handleSort("updated_at")}>
+                    Last Updated {renderSortIcon("updated_at")}
                   </th>
                   <th>Actions</th>
                 </tr>
@@ -208,14 +176,13 @@ const MaterialStatusPage = () => {
                 {submissions.map((sub) => (
                   <tr key={sub.id}>
                     <td>{sub.material_code}</td>
+                    {user.role === "admin" && <td>{sub.mask_code || "N/A"}</td>}
                     <td>{sub.material_description_snapshot}</td>
                     <td>
-                      {sub.plant_name || "N/A"} ({sub.plant}){" "}
-                      {/* Display plant_name and plant code */}
+                      {sub.plantlocation || "N/A"} ({sub.plant})
                     </td>
-                    <td>{sub.category}</td>
-                    <td>{new Date(sub.created_at).toLocaleDateString()}</td>
                     <td>{sub.submitted_by_username}</td>
+                    <td>{new Date(sub.updated_at).toLocaleString()}</td>
                     <td>
                       <button
                         className="btn-icon btn-view-details"
@@ -231,39 +198,23 @@ const MaterialStatusPage = () => {
             </table>
           </div>
           <div className="pagination-controls">
-            <span>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              isLoading={isLoading}
+            />
+            <span className="pagination-summary">
               Page {currentPage} of {totalPages} (Total: {totalItems} items)
             </span>
-            <div>
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1 || isLoading}
-                className="btn btn-secondary btn-sm"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages || isLoading}
-                className="btn btn-secondary btn-sm"
-              >
-                Next
-              </button>
-            </div>
           </div>
         </>
       )}
-      {/* Message for genuinely no submissions at all, even without search */}
-      {!isLoading &&
-        !error &&
-        submissions.length === 0 &&
-        searchTerm.trim() === "" && (
-          <div className="info-message card-style alert alert-info">
-            No completed submissions found.
-          </div>
-        )}
+      {!isLoading && !error && submissions.length === 0 && (
+        <div className="info-message card-style alert alert-info">
+          No completed submissions found.
+        </div>
+      )}
     </div>
   );
 };

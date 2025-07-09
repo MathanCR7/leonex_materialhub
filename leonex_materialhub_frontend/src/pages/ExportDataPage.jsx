@@ -1,3 +1,4 @@
+// pages/ExportDataPage.jsx
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import {
@@ -261,8 +262,8 @@ const ExportDataPage = () => {
   const filteredSubmissionsToExport = submissionsToExport.filter(
     (sub) =>
       sub.material_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (sub.plant_name &&
-        sub.plant_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (sub.plantlocation &&
+        sub.plantlocation.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (sub.plant &&
         sub.plant.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (sub.category &&
@@ -416,7 +417,7 @@ const ExportDataPage = () => {
                     <tr key={sub.id}>
                       <td>{sub.material_code}</td>
                       <td>
-                        {sub.plant_name || "N/A"} ({sub.plant})
+                        {sub.plantlocation || "N/A"} ({sub.plant})
                       </td>
                       <td>{sub.category || "N/A"}</td>
                       <td>{new Date(sub.created_at).toLocaleDateString()}</td>
@@ -500,7 +501,7 @@ const ExportDataPage = () => {
             <div className="single-submission-details">
               <h3>
                 Details for {singleSubmissionResult.material_code} at Plant{" "}
-                {singleSubmissionResult.plant_name ||
+                {singleSubmissionResult.plantlocation ||
                   singleSubmissionResult.plant}
               </h3>
               <p>

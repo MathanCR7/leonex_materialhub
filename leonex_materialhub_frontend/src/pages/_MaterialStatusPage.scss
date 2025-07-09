@@ -1,118 +1,107 @@
-//src/pages/_MaterialStatusPage.scss
+// src/pages/_MaterialStatusPage.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
-@use "../scss/buttons"; // Add this line
-@use "sass:color";
-// In _MaterialStatusPage.scss or a relevant partial
+@use "../components/Pagination";
 
 .material-status-page {
+  animation: fadeIn 0.4s ease-out;
+
   .controls-bar {
+    margin-bottom: var.$spacer-5;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    background-color: #fff; // If using card-style on it
+    // Padding is explicitly set to 0 as requested
+    @include mix.card-style($padding: 0);
   }
 
   .search-bar-status {
     display: flex;
     align-items: center;
     flex-grow: 1;
-    max-width: 400px; // Or adjust as needed
     .search-icon {
-      margin-right: 0.5rem;
-      color: #777;
+      color: var.$text-muted;
+      margin: 0 var.$spacer-3;
     }
-    .search-input {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .search-input.form-control {
+      border: none;
+      box-shadow: none;
+      &:focus {
+        box-shadow: none;
+      }
     }
-  }
-
-  .loading-indicator {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    font-size: 1.2rem;
-    color: #555;
-    .spinner-icon {
-      margin-bottom: 0.5rem;
-    }
-  }
-  .error-message.full-width-error,
-  .info-message {
-    padding: 1rem;
-    text-align: center;
-    margin-top: 1rem;
   }
 
   .submissions-table-container {
-    overflow-x: auto; // For responsiveness on small screens
-    margin-top: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    // Padding is explicitly set to 0 as requested
+    @include mix.card-style($padding: 0);
   }
 
   .submissions-table {
     width: 100%;
+    min-width: 900px;
     border-collapse: collapse;
     th,
     td {
-      padding: 0.75rem 1rem;
+      padding: var.$spacer-3 var.$spacer-4;
       text-align: left;
-      border-bottom: 1px solid #e0e0e0;
+      border-bottom: 1px solid var.$border-color-light;
+      white-space: nowrap;
     }
     th {
-      background-color: #f8f9fa;
-      font-weight: 600;
+      font-size: var.$font-size-sm;
+      font-weight: var.$font-weight-semibold;
+      text-transform: uppercase;
+      color: var.$text-secondary;
+      background-color: var.$surface-light;
       cursor: pointer;
       user-select: none;
       &:hover {
-        background-color: #e9ecef;
+        color: var.$text-primary;
       }
       svg {
-        margin-left: 0.3rem;
+        margin-left: var.$spacer-2;
       }
     }
-    tbody tr:hover {
-      background-color: #f1f3f5;
-    }
-    .btn-icon {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.3rem;
-      font-size: 1.1rem;
-      color: var(--primary-color, #007bff);
+    tbody tr {
+      transition: background-color 150ms ease-in-out;
       &:hover {
-        color: color.adjust(#007bff, $lightness: -10%);
+        background-color: var.$primary-light;
       }
     }
   }
 
   .pagination-controls {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column-reverse;
     align-items: center;
-    padding: 1rem 0;
-    margin-top: 1rem;
-    button {
-      padding: 0.5rem 1rem;
-      margin-left: 0.5rem;
-      border: 1px solid #ccc;
-      background-color: #fff;
-      border-radius: 4px;
-      cursor: pointer;
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
-      &:hover:not(:disabled) {
-        background-color: #e9ecef;
-      }
+    gap: var.$spacer-4;
+    margin-top: var.$spacer-5;
+    padding-top: var.$spacer-4;
+    width: 100%;
+    border-top: 1px solid var.$border-color-light;
+
+    @include mix.screen-breakpoint(md) {
+      flex-direction: row;
+      justify-content: space-between;
     }
+  }
+
+  .pagination-summary {
+    font-size: var.$font-size-sm;
+    color: var.$text-muted;
+    text-align: center;
+  }
+}
+// Media query to apply specific padding on larger screens
+@media (min-width: 768px) {
+  .material-status-page .controls-bar {
+    // The @include mix.card-style($padding: 0) already sets padding to 0.
+    // If you intended different padding here, you would override it.
+    // Since the request was to set padding 0 and the mixin does that,
+    // this block might not be strictly needed unless you want to emphasize
+    // that the 0 padding applies specifically >768px, but the mixin handles it generally.
+    // Keeping it explicit as requested in the previous prompt, even if redundant with mixin default.
+    padding: 0;
   }
 }

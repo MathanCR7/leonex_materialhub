@@ -1,167 +1,242 @@
-// src/pages/_DashboardPage.scss
+// src/scss/pages/_dashboard.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
-@use "sass:color"; // Not strictly used here yet, but good practice
-
-// StatCard styles are in _StatCard.scss, which should be imported via main.scss or directly if needed.
 
 .dashboard-page {
-  // .page-header and h1 styling should come from global _typography.scss or _layout.scss
+  animation: fadeIn 0.4s ease-out;
 
-  .statistics-section {
-    margin-bottom: var.$spacer-6; // Corrected: Was var.$spacer-xxl. Significant bottom margin.
-    h2 {
-      // Section title styling can be global (e.g., from _typography.scss for h2)
-      // Or specific here if needed:
-      // font-size: 1.75rem;
-      margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg. Space below section title.
-      // color: var.$text-primary;
-      // border-bottom: 2px solid var.$primary-light; // Optional accent
-      // padding-bottom: var.$spacer-2;
-      // display: inline-block;
+  .stats-grid {
+    display: grid;
+    gap: var.$spacer-4;
+    grid-template-columns: 1fr;
+    margin-bottom: var.$spacer-5;
+
+    @include mix.screen-breakpoint(sm) {
+      grid-template-columns: repeat(2, 1fr);
     }
-    .stats-grid {
-      display: grid;
-      // Responsive columns for StatCard components
-      grid-template-columns: repeat(
-        auto-fit,
-        minmax(260px, 1fr)
-      ); // Min width for stat cards
-      gap: var.$spacer-4; // Corrected: Was var.$spacer-lg. Gap between stat cards.
-      // margin-bottom: var.$spacer-5; // Corrected: Was var.$spacer-xl. Space after the grid, if needed before next section.
-      // Often, the next section's top margin handles this.
+    @include mix.screen-breakpoint(lg) {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: var.$spacer-5;
     }
   }
 
-  // .stat-card styles are primarily in _StatCard.scss.
-  // The .stats-grid above handles their layout.
+  .third-party-dashboard-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var.$spacer-5;
+  }
 
-  .recent-activity-section {
-    // Generic section for recent items
-    margin-bottom: var.$spacer-6; // Consistent bottom margin for sections
-    h2 {
-      margin-bottom: var.$spacer-4;
+  .financial-grid {
+    .stat-card {
+      border-left: 4px solid;
+      background: var.$surface-color;
+
+      .stat-card-info h4 {
+        color: var.$text-secondary;
+      }
+      .stat-card-info p {
+        font-weight: var.$font-weight-bold;
+        color: var.$text-primary;
+      }
+      .stat-card-icon {
+        opacity: 0.8;
+      }
+      &.bg-primary {
+        border-color: var.$primary;
+        .stat-card-icon {
+          color: var.$primary;
+        }
+      }
+      &.bg-success-light {
+        border-color: var.$success;
+        .stat-card-icon {
+          color: var.$success;
+        }
+      }
+      &.bg-warning-light {
+        border-color: var.$warning;
+        .stat-card-icon {
+          color: var.$warning;
+        }
+      }
+      &.bg-danger-light {
+        border-color: var.$danger;
+        .stat-card-icon {
+          color: var.$danger;
+        }
+      }
     }
   }
 
-  .recent-materials-card {
-    @include mix.card-style; // Applies default card styling
-    // Override card padding if needed for this specific card
-    // padding: var.$spacer-4;
+  .charts-container {
+    display: grid;
+    gap: var.$spacer-5;
+    grid-template-columns: 1fr;
+
+    @include mix.screen-breakpoint(xl) {
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    }
+  }
+
+  // --- FIX APPLIED HERE ---
+  .chart-card {
+    // Declarations are moved BEFORE the mixin include.
+    display: flex;
+    flex-direction: column;
+    min-width: 0; // Keeping this for extra safety
+
+    // The card-style mixin is now called last.
+    // Padding is passed as an argument for cleaner code.
+    @include mix.card-style($padding: var.$spacer-5);
 
     h3 {
-      display: flex;
-      align-items: center;
-      margin-top: 0; // Reset margin if card-style adds it
-      margin-bottom: var.$spacer-4; // Corrected: Was var.$spacer-lg. Space after card title.
-      color: var.$primary-dark;
-      font-size: 1.4rem; // Slightly larger for card titles
+      @include mix.flex-center($justify: flex-start);
+      gap: var.$spacer-3;
+      margin-top: 0;
+      margin-bottom: var.$spacer-5;
+      font-size: 1.1rem;
       font-weight: var.$font-weight-semibold;
+      color: var.$text-secondary;
+      flex-shrink: 0; // Prevent the title from shrinking
+    }
 
-      svg {
-        // Icon next to h3 title (e.g., FaList, FaHistory)
-        margin-right: var.$spacer-3; // Corrected: Was var.$spacer-md. Space between icon and text.
-        font-size: 1.1em; // Relative to h3 font size, making it proportional
-        color: var.$primary;
-        position: relative; // For fine-tuning
-        top: -0.05em;
-      }
+    .chart-wrapper {
+      flex-grow: 1;
+      width: 100%;
+      min-height: 350px;
+    }
+
+    .no-chart-data {
+      @include mix.flex-center;
+      flex-grow: 1;
+      min-height: 250px;
+      color: var.$text-muted;
+      font-style: italic;
+      font-size: var.$font-size-sm;
+    }
+  }
+
+  // --- FIX APPLIED HERE ---
+  .welcome-card {
+    // All declarations are moved BEFORE the mixin include.
+    @include mix.flex-center(center, center);
+    flex-direction: column;
+    text-align: center;
+    gap: var.$spacer-4;
+    background: linear-gradient(135deg, var.$surface-color, var.$surface-light);
+
+    // The card-style mixin is now called last, with padding as an argument.
+    @include mix.card-style($padding: var.$spacer-5);
+
+    // Nested rules that come after are perfectly fine.
+    @include mix.screen-breakpoint(md) {
+      padding: var.$spacer-6;
+    }
+
+    svg {
+      color: var.$primary;
+    }
+    h2 {
+      margin-top: var.$spacer-2;
+    }
+    p {
+      max-width: 50ch;
+      color: var.$text-secondary;
+    }
+  }
+
+  // --- NO FIX NEEDED HERE ---
+  // This rule was already correct because it only has nested rules (h3, ul)
+  // after the include, not declarations.
+  .recent-materials-card {
+    @include mix.card-style;
+    h3 {
+      @include mix.flex-center(flex-start);
+      gap: var.$spacer-3;
+      margin-bottom: var.$spacer-4;
+      font-size: 1.2rem;
+      color: var.$text-primary;
     }
 
     ul {
-      @include mix.reset-list; // Use mixin to remove default list styles
-
+      list-style: none;
       li {
-        padding: var.$spacer-3 0; // Corrected: Was var.$spacer-sm. Vertical padding for list items.
-        border-bottom: var.$border-width solid var.$border-color-light; // Use lighter border
-        transition: background-color var.$transition-duration-short;
+        display: flex;
+        flex-direction: column;
+        gap: var.$spacer-2;
+        padding: var.$spacer-3 0;
+        border-bottom: 1px solid var.$border-color-light;
+        transition: background-color 150ms ease-in-out;
+        padding-left: var.$spacer-3;
+        border-left: 3px solid transparent;
 
         &:last-child {
           border-bottom: none;
-          padding-bottom: 0; // No padding at the very bottom of the list
+          padding-bottom: 0;
         }
-        &:first-child {
-          padding-top: 0; // No padding at the very top if h3 is present
-        }
-
         &:hover {
-          background-color: color.adjust(
-            var.$surface-color,
-            $lightness: -2%
-          ); // Subtle hover
+          background-color: var.$surface-light;
+          border-left-color: var.$primary;
         }
 
         .recent-material-header {
           font-weight: var.$font-weight-medium;
-          color: var.$text-primary;
-          margin-bottom: var.$spacer-2; // Space between header and details
-          display: block; // Ensure it takes full width
-          font-size: 1rem;
+          color: var.$primary;
+          strong {
+            color: var.$text-primary;
+          }
         }
-
         .recent-material-details {
-          font-size: var.$font-size-sm; // Use small font size variable
-          color: var.$text-secondary; // Use secondary text for details
+          font-size: var.$font-size-sm;
+          color: var.$text-secondary;
           display: flex;
           flex-wrap: wrap;
-          gap: var.$spacer-2 var.$spacer-3; // Row and column gap for details
-          // (8px vertical, 16px horizontal)
-
+          gap: var.$spacer-3 var.$spacer-4;
           span {
-            // Individual detail items (e.g., Plant, Category)
-            display: inline-flex; // Align icon with text if any
-            align-items: center;
-            svg {
-              margin-right: var.$spacer-1;
-              font-size: 1.1em; // Slightly larger icons in details
-              color: var.$text-muted;
-            }
+            @include mix.flex-center($justify: flex-start);
+            gap: var.$spacer-2;
           }
         }
       }
     }
-    .no-recent-data {
-      // Style for when the list is empty
-      padding: var.$spacer-4 0;
-      text-align: center;
-      font-style: italic;
-      color: var.$text-muted;
+  }
+}
+
+.stats-grid > div[style*="cursor: pointer"] {
+  .stat-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: var.$box-shadow-lg;
     }
   }
+}
 
-  // Styling for loading/error messages related to dashboard stats or charts
-  .loading-text,
-  .error-message {
-    padding: var.$spacer-5 0; // Corrected: Was var.$spacer-xl. Consistent with other large paddings.
-    text-align: center;
-    font-style: italic;
-    color: var.$text-secondary;
-    font-size: 1.1rem;
+.recharts-tooltip-wrapper {
+  .recharts-default-tooltip {
+    background-color: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(45, 58, 78, 0.5) !important;
+    border-radius: var.$border-radius !important;
+    box-shadow: var.$box-shadow-lg;
 
-    &.error-message {
-      color: var.$danger;
-      font-weight: var.$font-weight-medium;
+    .recharts-tooltip-label {
+      color: var.$surface-color;
+      font-weight: var.$font-weight-semibold;
+    }
+    .recharts-tooltip-item-name,
+    .recharts-tooltip-item-separator {
+      color: var.$sidebar-text !important;
+    }
+    .recharts-tooltip-item-value {
+      font-weight: var.$font-weight-bold;
+      color: var.$surface-color;
     }
   }
+}
 
-  // Placeholder for charts if you add them
-  .charts-section {
-    margin-bottom: var.$spacer-6;
-    h2 {
-      margin-bottom: var.$spacer-4;
-    }
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr; // Default to single column
-      gap: var.$spacer-4;
-      @include mix.screen-breakpoint(lg-up) {
-        grid-template-columns: repeat(2, 1fr); // Two columns on larger screens
-      }
-    }
-    .chart-container {
-      @include mix.card-style;
-      // padding: var.$spacer-4; // Card style already includes padding
-      // Add specific styles for chart canvas or library wrapper
-    }
-  }
+.recharts-pie-label-text {
+  fill: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
 }

@@ -1,0 +1,280 @@
+// src/pages/_UserManagementPage.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+@use "../scss/buttons" as btn;
+
+.user-management-page {
+  display: flex;
+  flex-direction: column;
+  gap: var.$spacer-5;
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var.$spacer-2;
+
+    h1 {
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-3;
+      font-size: 1.875rem;
+      font-weight: var.$font-weight-bold;
+      color: var.$text-primary;
+      margin: 0;
+    }
+
+    .page-subtitle {
+      color: var.$text-secondary;
+      margin: 0 0 var.$spacer-2;
+      font-size: var.$font-size-base;
+      max-width: 600px;
+    }
+
+    @include mix.screen-breakpoint(md) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      gap: var.$spacer-4;
+
+      .page-subtitle {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // Your card-style mixin already includes the border, so no separate declaration is needed.
+  .users-table-container {
+    overflow-x: auto;
+    @include mix.card-style($padding: 0);
+  }
+
+  .users-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+
+    th,
+    td {
+      padding: var.$spacer-4;
+      text-align: left;
+      border-bottom: 1px solid var.$border-color-light;
+      vertical-align: middle;
+      color: var.$text-secondary;
+    }
+
+    th {
+      background-color: var.$surface-light;
+      font-size: var.$font-size-sm;
+      font-weight: var.$font-weight-semibold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var.$text-secondary;
+    }
+
+    tbody tr {
+      transition: var.$transition-default;
+      &:last-child {
+        td {
+          border-bottom: none;
+        }
+      }
+      &:hover {
+        background-color: var.$surface-light;
+      }
+      td:first-child {
+        color: var.$text-primary;
+        font-weight: var.$font-weight-medium;
+      }
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 5px 12px;
+      font-size: var.$font-size-sm; // Using your variables
+      font-weight: var.$font-weight-bold;
+      border-radius: var.$border-radius-pill;
+      text-transform: capitalize;
+      line-height: 1.2;
+    }
+
+    // Role badge styles removed as requested.
+
+    .status-badge {
+      @extend .badge;
+      @include mix.flex-center;
+      gap: 6px;
+
+      &::before {
+        content: "";
+        display: block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      &.active {
+        background-color: rgba(var.$success, 0.1);
+        color: var.$success;
+        &::before {
+          background-color: var.$success;
+        }
+      }
+      &.inactive {
+        background-color: rgba(var.$danger, 0.1);
+        color: var.$danger;
+        &::before {
+          background-color: var.$danger;
+        }
+      }
+    }
+
+    .btn-icon {
+      @include btn.btn-icon-styles;
+      color: var.$text-secondary;
+      &:hover {
+        color: var.$primary;
+        background-color: var.$surface-light;
+      }
+    }
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(#0f172a, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: var.$z-index-modal-overlay;
+    padding: var.$spacer-4;
+    animation: fadeIn 200ms ease-out;
+    @include mix.flex-center;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideInUp 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    @include mix.card-style($padding: 0);
+  }
+
+  .modal-header {
+    padding: var.$spacer-4 var.$spacer-5;
+    border-bottom: 1px solid var.$border-color-light;
+    flex-shrink: 0;
+    @include mix.flex-center($justify: space-between);
+
+    h2 {
+      margin: 0;
+      font-size: var.$font-size-lg;
+      font-weight: var.$font-weight-semibold;
+      color: var.$text-primary;
+    }
+    .btn-close-modal {
+      @include btn.btn-icon-styles;
+    }
+  }
+
+  .user-form {
+    padding: var.$spacer-5;
+    overflow-y: auto;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var.$spacer-4;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var.$spacer-2;
+
+    label {
+      font-weight: var.$font-weight-medium;
+      color: var.$text-primary;
+      font-size: var.$font-size-sm;
+    }
+
+    .form-control,
+    .react-select-container .react-select__control {
+      width: 100%;
+      padding: var.$spacer-2 var.$spacer-3;
+      font-size: var.$font-size-base;
+      border: 1px solid var.$border-color;
+      border-radius: var.$border-radius;
+      background-color: var.$surface-color;
+      color: var.$text-primary;
+      transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+
+      &:focus,
+      &:focus-within {
+        outline: none;
+        border-color: var.$primary;
+        box-shadow: var.$box-shadow-focus;
+      }
+    }
+
+    .react-select-container .react-select__control {
+      padding: 2px;
+      min-height: 44px;
+    }
+    .react-select-container .react-select__placeholder {
+      color: var.$text-muted;
+    }
+
+    .react-datepicker-wrapper {
+      width: 100%;
+      .form-control {
+        width: 100%;
+      }
+    }
+
+    &.checkbox-group {
+      flex-direction: row;
+      align-items: center;
+      gap: var.$spacer-3;
+
+      input[type="checkbox"] {
+        width: 1.15em;
+        height: 1.15em;
+        accent-color: var.$primary;
+      }
+
+      label {
+        font-weight: var.$font-weight-regular;
+        font-size: var.$font-size-base;
+        color: var.$text-secondary;
+      }
+    }
+  }
+
+  .modal-actions {
+    gap: var.$spacer-3;
+    padding: var.$spacer-4 var.$spacer-5;
+    border-top: 1px solid var.$border-color-light;
+    background-color: var.$surface-light;
+    flex-shrink: 0;
+    @include mix.flex-center($justify: flex-end);
+  }
+
+  .loading-indicator {
+    @include mix.flex-center;
+    flex-direction: column;
+    gap: var.$spacer-4;
+    padding: var.$spacer-6;
+    color: var.$text-secondary;
+    font-size: 1.1rem;
+
+    .spinner-icon.large-spinner {
+      font-size: 3rem;
+      color: var.$primary;
+    }
+  }
+}
+
+.react-select__menu {
+  z-index: var.$z-index-toast !important;
+}

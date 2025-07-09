@@ -1,11 +1,7 @@
 // src/scss/_base.scss
 @use "utils/variables" as var;
-@use "utils/mixins" as mix;
-
-// Typography and Buttons are typically imported in main.scss after utils
-// to ensure variables are available to them.
-// @use "typography";
-// @use "buttons";
+@use "utils/animations";
+@use "utils/mixins";
 
 *,
 *::before,
@@ -16,138 +12,108 @@
 }
 
 html {
-  font-size: var.$font-size-root; // Establishes the base for rem units
-  scroll-behavior: smooth; // Smooth scrolling for anchor links
-  -webkit-text-size-adjust: 100%; // Prevents text inflation in mobile browsers
-  -webkit-tap-highlight-color: rgba(
-    0,
-    0,
-    0,
-    0
-  ); // Removes tap highlight on touch devices
-  line-height: var.$line-height-base; // Set base line-height on html for better rem calculations
+  font-size: var.$font-size-root;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: var.$font-family-sans; // Default font stack from variables
+  font-family: var.$font-family-sans;
+  font-size: var.$font-size-base;
+  font-weight: var.$font-weight-regular;
   background-color: var.$bg-color;
   color: var.$text-primary;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh; // Ensures footer stays at bottom on short pages
-  overflow-x: hidden; // Prevents horizontal scrollbars from rogue elements
-  text-rendering: optimizeLegibility; // Enhances text rendering
-  -webkit-font-smoothing: antialiased; // Smoother fonts on WebKit
-  -moz-osx-font-smoothing: grayscale; // Smoother fonts on Firefox
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-// Main content area, ensure it grows to fill space
-main.main-content {
-  flex-grow: 1;
-  width: 100%;
-  // Optional: Add default padding to main content area for consistent spacing
-  // padding: var.$spacer-4 0; // Example: top/bottom padding
-  // @include mix.screen-breakpoint(md-up) {
-  //   padding: var.$spacer-5 0;
-  // }
-}
-
-// Responsive images and media
 img,
-svg,
 video,
-canvas,
-audio,
-iframe,
-embed,
-object {
-  display: block; // Removes extra space below inline images
-  max-width: 100%; // Ensures media doesn't overflow its container
-  height: auto; // Maintains aspect ratio
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-// Remove default fieldset styling
 fieldset {
-  border: none; // Removes default browser border
-  min-width: 0; // Fix for flexbox issues with fieldsets in some browsers
+  border: none;
+  min-width: 0;
 }
 
-// Reusable loading indicator style
-.loading-fullscreen {
-  @include mix.flex-center(column); // Center content using flex mixin
-  min-height: 70vh; // Take up a good portion of the viewport
-  text-align: center;
-  color: var.$text-secondary; // Use secondary text color
+// Reusable spinner class
+.spinner-icon {
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  line-height: 1;
 
-  .spinner-icon.large-spinner {
-    font-size: 3.5rem; // Larger spinner
-    color: var.$primary;
-    margin-bottom: var.$spacer-4; // Was var.$spacer-lg, using numeric equivalent
+  &-btn {
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
   }
+}
+
+// Card style utility class
+.card-style {
+  @include mixins.card-style;
+}
+
+// Generic loading/error/info messages
+.alert {
+  padding: var.$spacer-4;
+  margin-bottom: var.$spacer-4;
+  border: var.$border-width solid transparent;
+  border-radius: var.$border-radius;
+  display: flex;
+  align-items: center;
+  gap: var.$spacer-3;
+
+  &-danger {
+    color: #a21e17;
+    background-color: #ffebe9;
+    border-color: #ffc2be;
+  }
+  &-warning {
+    color: #995c00;
+    background-color: #fff4e5;
+    border-color: #ffe6c1;
+  }
+  &-info {
+    color: #007a73;
+    background-color: #e5f9f8;
+    border-color: #c1eeea;
+  }
+}
+
+// Full screen loaders
+.loading-fullscreen,
+.error-fullscreen {
+  @include mixins.flex-center;
+  flex-direction: column;
+  height: calc(100vh - #{(var.$header-height * 2)});
+  color: var.$text-secondary;
+  gap: var.$spacer-3;
+  text-align: center;
+  padding: var.$spacer-4;
+
+  .large-spinner {
+    font-size: 2.5rem;
+    color: var.$primary;
+  }
+}
+
+// Loading overlay for partial screen loading
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(var.$surface-color, 0.85);
+  @include mixins.flex-center;
+  flex-direction: column;
+  gap: var.$spacer-4;
+  z-index: 100;
+  border-radius: var.$border-radius-lg;
   p {
-    font-size: var.$font-size-lg; // Use variable for font size
     font-weight: var.$font-weight-medium;
   }
-}
-
-// Reusable card utility class
-.card-style {
-  @include mix.card-style; // Apply card styling mixin
-  // Default padding is var.$spacer-4 in the mixin
-}
-
-// General form section styling (can be overridden by page-specific styles)
-.form-section {
-  padding-top: var.$spacer-4; // Was var.$spacer-lg
-  padding-bottom: var.$spacer-4; // Was var.$spacer-lg
-  &:not(:last-child) {
-    border-bottom: var.$border-width solid var.$muted-border-color;
-    margin-bottom: var.$spacer-4; // Was var.$spacer-lg
-  }
-  .form-section-title {
-    font-size: 1.4rem; // Adjusted for better hierarchy
-    font-weight: var.$font-weight-semibold;
-    color: var.$primary-dark;
-    margin-bottom: var.$spacer-4; // Was var.$spacer-lg
-    // Optional: add a subtle underline or accent
-    // padding-bottom: var.$spacer-2;
-    // border-bottom: 2px solid var.$primary-light;
-    // display: inline-block;
-  }
-}
-
-// Spinner icon animations and base styles
-.spinner-icon-btn, // For spinners inside buttons
-.spinner-icon {
-  // For standalone spinners
-  display: inline-block; // Ensures transform works correctly
-  animation: spin 0.8s linear infinite; // Slightly faster spin
-}
-
-.spinner-icon-btn {
-  // Spacing handled by .btn class typically
-  // margin-right: var.$spacer-2; // Was var.$spacer-sm
-}
-
-// Keyframes for the spin animation (should be defined once globally)
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-// Utility class for visually hidden elements (for accessibility)
-.visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
 }

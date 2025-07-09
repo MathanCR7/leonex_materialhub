@@ -1,0 +1,109 @@
+// src/components/_Pagination.scss
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mixins;
+
+.pagination-container {
+  @include mixins.flex-center;
+  background-color: var.$surface-color;
+  padding: var.$spacer-1;
+  border-radius: var.$border-radius-pill;
+  box-shadow: var.$box-shadow-sm;
+  gap: var.$spacer-1;
+  user-select: none;
+  width: fit-content;
+  border: 1px solid var.$border-color-light;
+
+  @include mixins.screen-breakpoint(md) {
+    gap: var.$spacer-2;
+    padding: var.$spacer-1 var.$spacer-2;
+  }
+}
+
+.pagination-list {
+  @include mixins.flex-center;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  gap: var.$spacer-1;
+}
+
+.pagination-item {
+  @include mixins.flex-center;
+  cursor: pointer;
+  font-size: var.$font-size-sm;
+  font-weight: var.$font-weight-medium;
+  color: var.$text-secondary;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+
+  @include mixins.screen-breakpoint(md) {
+    width: 38px;
+    height: 38px;
+    font-size: var.$font-size-base;
+  }
+
+  &:hover:not(.active) {
+    background-color: var.$surface-light;
+    color: var.$text-primary;
+  }
+
+  &.active {
+    background-color: var.$primary;
+    color: var.$surface-color;
+    font-weight: var.$font-weight-bold;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+
+  &.dots {
+    cursor: default;
+    color: var.$text-muted;
+    min-width: 24px;
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.pagination-btn {
+  @include mixins.flex-center;
+  background-color: transparent;
+  border: none;
+  color: var.$text-secondary;
+  font-weight: var.$font-weight-medium;
+  font-size: var.$font-size-sm;
+  padding: var.$spacer-2;
+  border-radius: var.$border-radius-pill;
+  cursor: pointer;
+  gap: var.$spacer-2;
+  transition: all 0.2s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background-color: var.$surface-light;
+    color: var.$text-primary;
+  }
+
+  &:disabled {
+    color: var.$text-muted;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .pagination-btn-text {
+    display: none;
+  }
+
+  @include mixins.screen-breakpoint(md) {
+    .pagination-btn-text {
+      display: inline;
+    }
+    padding: var.$spacer-2 var.$spacer-3;
+  }
+
+  svg {
+    font-size: 0.8em;
+  }
+}

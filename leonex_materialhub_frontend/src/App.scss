@@ -1,10 +1,65 @@
 // src/App.scss
-// This file is the main entry point for all your SASS/SCSS styles.
-// It imports main.scss from the scss directory, which then orchestrates all other imports.
+@use "scss/main";
 
-@use "./scss/main";
+// --- GLOBAL LAYOUT ---
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative; // For sidebar positioning context
 
-// If you're not importing react-toastify.css in your JS (e.g., App.jsx or main.jsx),
-// and prefer a global SCSS import, you could do it here.
-// However, JS import is generally recommended for CSS related to JS libraries.
-// @import 'react-toastify/dist/ReactToastify.css';
+  &.no-sidebar {
+    .main-content {
+      margin-left: 0;
+    }
+  }
+}
+
+.main-content {
+  flex-grow: 1;
+  background-color: main.$bg-color;
+  padding: main.$spacer-4;
+  margin-left: 0; // Mobile default
+  position: relative;
+  transition: margin-left main.$transition-duration main.$transition-easing;
+
+  @include main.screen-breakpoint(md) {
+    padding: main.$spacer-5 main.$spacer-6;
+    margin-left: main.$sidebar-width-expanded;
+  }
+}
+
+// When the sidebar is collapsed, adjust the main content margin on desktop
+.sidebar.is-collapsed + .main-content {
+  @include main.screen-breakpoint(md) {
+    margin-left: main.$sidebar-width-collapsed;
+  }
+}
+
+// Mobile menu toggle button
+.menu-toggle-btn {
+  display: inline-flex;
+  position: fixed; // Fixed to viewport for mobile
+  top: main.$spacer-3;
+  left: main.$spacer-3;
+  background: main.$surface-color;
+  color: main.$text-secondary;
+  border: 1px solid main.$border-color;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  z-index: main.$z-index-sidebar - 5;
+  box-shadow: main.$box-shadow-sm;
+  cursor: pointer;
+
+  &:hover {
+    color: main.$primary;
+    box-shadow: main.$box-shadow;
+  }
+
+  // Hide on desktop
+  @include main.screen-breakpoint(md) {
+    display: none;
+  }
+}

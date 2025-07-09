@@ -1,172 +1,132 @@
 // src/components/_ImageUploadField.scss
+
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
-@use "../scss/buttons"; // Ensure buttons are available
+@use "../scss/buttons" as btn;
 @use "sass:color";
 
 .image-upload-field {
-  position: relative;
-  background-color: var.$surface-light; // Give the whole field a subtle background
-  padding: var.$spacer-3;
-  border-radius: var.$border-radius-md;
-  border: var.$border-width solid var.$border-color-light;
-  transition: box-shadow var.$transition-duration-short;
-
-  &:focus-within {
-    // When an input inside gets focus
-    border-color: var.$primary-light;
-    box-shadow: 0 0 0 2px color.change(var.$primary, $alpha: 0.15);
-  }
+  background-color: var.$surface-light;
+  padding: var.$spacer-2;
+  border-radius: var.$border-radius;
+  border: 1px solid var.$border-color-light;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
   > label {
-    // The main label for the field
-    display: block;
-    font-size: 0.95rem; // Slightly smaller for field labels
-    font-weight: var.$font-weight-semibold;
+    font-weight: var.$font-weight-medium;
     color: var.$text-primary;
-    margin-bottom: var.$spacer-3;
+    display: block;
+    margin-bottom: var.$spacer-2;
+    font-size: var.$font-size-sm;
   }
 
   .upload-controls-wrapper {
-    border: 2px dashed var.$muted-border-color;
-    border-radius: var.$border-radius;
-    padding: var.$spacer-3;
-    background-color: color.adjust(
-      var.$bg-color,
-      $lightness: 1%
-    ); // Slightly lighter than page bg
-    transition: border-color var.$transition-duration-base,
-      background-color var.$transition-duration-base;
-    text-align: center; // Center content if buttons don't fill width
-
-    &:hover:not(.disabled-wrapper) {
-      // Add a class when fieldset is disabled
-      border-color: var.$primary;
-      background-color: var.$surface-color; // Lighten on hover
-    }
-  }
-
-  // When the parent fieldset is disabled, or this component is explicitly disabled
-  &.disabled,
-  fieldset:disabled & {
-    // Targets .image-upload-field when it's inside a disabled fieldset
-    .upload-controls-wrapper {
-      border-style: solid;
-      border-color: var.$border-color-light;
-      background-color: var.$bg-color;
-      cursor: default;
-    }
-    .btn-upload {
-      display: none; // Hide upload buttons if disabled
-    }
-    .preview-container .btn-remove-file {
-      display: none; // Hide remove button if disabled
-    }
-    .no-file-placeholder {
-      color: var.$text-muted;
-    }
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .upload-area {
     display: flex;
-    flex-direction: column; // Stack buttons vertically on mobile
-    align-items: stretch; // Make buttons full width in column
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
     gap: var.$spacer-2;
+    padding: var.$spacer-2;
+    border: 2px dashed var.$border-color;
+    border-radius: var.$border-radius;
+    background-color: var.$surface-color;
+    transition: var.$transition-default;
+    min-height: 80px;
+    height: 100%;
+    flex-grow: 1;
 
-    @include mix.screen-breakpoint(sm-up) {
-      flex-direction: row; // Side-by-side on larger screens
-      justify-content: center; // Center if they don't fill width
-      align-items: center;
+    &:hover:not(.disabled) {
+      border-color: var.$primary;
+      background-color: color.adjust(var.$primary, $alpha: -0.95);
     }
-  }
 
-  .btn-upload {
-    @extend .btn; // Inherit base button styles
-    flex-grow: 1; // Allow buttons to grow
-    // min-width: 160px; // Maintain a decent minimum width
+    .btn-upload {
+      background-color: var.$surface-color;
+      color: var.$text-secondary;
+      border-color: var.$border-color;
+      font-size: var.$font-size-xs;
+      width: auto;
+      flex-grow: 1;
+      padding: var.$spacer-2 var.$spacer-1;
+      @include btn.btn-base;
 
-    @include mix.screen-breakpoint(xs-only) {
-      width: 100%; // Full width on mobile
+      &:hover:not(:disabled) {
+        background-color: var.$surface-light;
+        border-color: var.$secondary;
+        color: var.$text-primary;
+      }
     }
-    svg {
-      font-size: 1.1em;
-      // margin-right will be handled by .btn global style
+
+    .no-file-placeholder {
+      color: var.$text-muted;
+      font-style: italic;
+      font-size: var.$font-size-sm;
     }
-  }
-
-  .btn-select-file {
-    @extend .btn-outline-primary; // Use outline style
-  }
-  .btn-use-camera {
-    @extend .btn-outline-secondary;
-  }
-
-  .no-file-placeholder {
-    padding: var.$spacer-3 0;
-    color: var.$text-muted;
-    font-style: italic;
-    font-size: 0.9rem;
   }
 
   .preview-container {
-    margin-top: var.$spacer-3;
     position: relative;
-    display: flex; // Use flex to center content
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    min-height: 150px; // Ensure a minimum height for preview area
-    max-height: 250px;
-    background-color: var.$bg-color; // Background for the preview area
-    border-radius: var.$border-radius;
-    overflow: hidden; // Keep image/video contained
-    border: var.$border-width solid var.$border-color-light;
 
     .preview-media {
-      display: flex; // Already flex from parent, but good for explicitness
-      justify-content: center;
-      align-items: center;
-      width: 100%;
+      border-radius: var.$border-radius;
+      overflow: hidden;
+      background-color: var.$bg-color;
+      border: 1px solid var.$border-color;
+      @include mix.flex-center;
       height: 100%;
-      padding: var.$spacer-1; // Small padding around the media
+      min-height: 120px;
+      max-height: 150px;
 
       img,
       video {
-        display: block;
-        max-width: 100%;
-        max-height: calc(
-          250px - var.$spacer-1 * 2
-        ); // Max height respecting padding
-        height: auto;
-        object-fit: contain; // Ensure whole image/video is visible
-        border-radius: calc(var.$border-radius - var.$spacer-1);
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
     }
 
     .btn-remove-file {
-      @extend .btn;
-      @extend .btn-danger;
-      @extend .btn-sm;
-      @extend .btn-icon-only; // Use icon-only styles for compactness
       position: absolute;
-      top: var.$spacer-2;
-      right: var.$spacer-2;
-      border-radius: var.$border-radius-pill; // Make it circular
-      width: 32px; // Fixed size for circular button
-      height: 32px;
+      top: var.$spacer-1;
+      right: var.$spacer-1;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      line-height: 1;
       padding: 0;
-      line-height: 1; // Ensure icon centers in the circle
-      box-shadow: var.$box-shadow; // Give it a slight shadow to pop
-      z-index: 10; // Ensure it's above the media
-      opacity: 0.85;
-
-      svg {
-        margin: 0; // Reset any inherited margins
-        font-size: 0.9em;
-      }
+      transition: var.$transition-default;
+      cursor: pointer;
+      @include mix.flex-center;
 
       &:hover {
-        opacity: 1;
-        transform: scale(1.1) translateY(0); // Add scale to hover
+        background-color: var.$danger;
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  &.disabled {
+    .upload-area {
+      cursor: not-allowed;
+      background-color: var.$surface-color;
+      &:hover {
+        border-color: var.$border-color;
       }
     }
   }

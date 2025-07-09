@@ -1,12 +1,41 @@
-// routes/submissions.js
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs-extra");
 const submissionController = require("../controllers/submissionController");
-const authenticateToken = require("../middleware/authMiddleware");
-const pool = require("../config/db"); // Used by attachSubmissionDetailsForUpdate
+const authenticateToken = require("../middleware/authenticateToken");
+const { canSubmitData } = require("../middleware/authorization");
+const pool = require("../config/db");
+
+// Middleware to fetch details for PUT requests to set upload paths
+const attachSubmissionDetailsForUpdate = async (req, res, next) => {
+  if (req.method === "PUT" && req.params.submissionId) {
+    try {
+      const [rows] = await pool.query(
+        "SELECT material_code, plant FROM material_data_submissions WHERE id = ?",
+        [req.params.submissionId]
+      );
+      if (rows.length > 0) {
+        req.submissionDetailsForPath = {
+          material_code: rows[0].material_code,
+          plant: rows[0].plant,
+        };
+      } else {
+        // If submission doesn't exist, stop before multer tries to process files.
+        return res.status(404).json({
+          message: "Submission not found, cannot determine upload path.",
+        });
+      }
+    } catch (error) {
+      console.error("Error attaching submission details:", error);
+      return res
+        .status(500)
+        .json({ message: "Server error preparing for file update." });
+    }
+  }
+  next();
+};
 
 // Multer disk storage configuration
 const storage = multer.diskStorage({
@@ -17,18 +46,16 @@ const storage = multer.diskStorage({
     // Determine materialCode and plantCode based on request type
     if (req.method === "POST" && req.originalUrl.endsWith("/submit")) {
       materialCodeForPath = req.body.material_code;
-      plantCodeForPath = req.body.plant; // 'plant' from form is the plant_code
+      plantCodeForPath = req.body.plant;
     } else if (req.method === "PUT" && req.params.submissionId) {
-      // For updates, material_code and plant are fetched by attachSubmissionDetailsForUpdate middleware
       if (!req.submissionDetailsForPath) {
-        // This middleware should have run and populated this. If not, it's an error.
         return cb(
           new Error("Submission details for path not found on update."),
           false
         );
       }
       materialCodeForPath = req.submissionDetailsForPath.material_code;
-      plantCodeForPath = req.submissionDetailsForPath.plant; // 'plant' from DB is plant_code
+      plantCodeForPath = req.submissionDetailsForPath.plant;
     }
 
     if (!materialCodeForPath || !plantCodeForPath) {
@@ -40,34 +67,28 @@ const storage = multer.diskStorage({
       );
     }
 
-    // Base path for the material and plant: public/media/material_code_plant_code
     const materialPlantBaseDir = path.join(
-      process.cwd(), // Use process.cwd() for robust pathing from project root
+      process.cwd(),
       "public",
       "media",
       `${materialCodeForPath}_${plantCodeForPath}`
     );
 
-    // Determine specific subfolder based on fieldname
-    let subFolder = "temp_uploads"; // Default fallback, should be overwritten
-    if (
-      file.fieldname.startsWith("image_") ||
-      file.fieldname.startsWith("video_")
-    ) {
-      // Check if it's one of the "good media" fields
-      const goodMediaFields = [
-        "image_specification",
-        "image_packing_condition",
-        "image_item_spec_mentioned",
-        "image_product_top_view",
-        "image_3d_view",
-        "image_side_view_thickness",
-        "image_stock_condition_packing",
-        "video_item_inspection",
-      ];
-      if (goodMediaFields.includes(file.fieldname)) {
-        subFolder = "good_media";
-      }
+    // Determine subfolder based on file fieldname
+    let subFolder = "temp_uploads"; // Default
+    const goodMediaFields = [
+      "image_specification",
+      "image_packing_condition",
+      "image_item_spec_mentioned",
+      "image_product_top_view",
+      "image_3d_view",
+      "image_side_view_thickness",
+      "image_stock_condition_packing",
+      "video_item_inspection",
+    ];
+
+    if (goodMediaFields.includes(file.fieldname)) {
+      subFolder = "good_media";
     } else if (file.fieldname === "package_defect_images") {
       subFolder = "package_defects";
     } else if (file.fieldname === "physical_defect_images") {
@@ -75,12 +96,11 @@ const storage = multer.diskStorage({
     } else if (file.fieldname === "other_defect_images") {
       subFolder = "other_defects";
     }
-    // If subFolder remains "temp_uploads", it's an unrecognized field, which might be an issue.
 
     const finalUploadPath = path.join(materialPlantBaseDir, subFolder);
 
     try {
-      await fs.mkdirs(finalUploadPath); // fs-extra ensures directory exists
+      await fs.mkdirs(finalUploadPath);
       cb(null, finalUploadPath);
     } catch (err) {
       console.error(`Error creating directory ${finalUploadPath}:`, err);
@@ -89,7 +109,6 @@ const storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    // Remove [] from fieldname if it's an array (e.g., defect_images[])
     const originalFieldName = file.fieldname.replace(/\[\]$/, "");
     cb(
       null,
@@ -114,10 +133,8 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 1024 * 1024 * 50 }, // 50MB limit per file
   fileFilter: fileFilter,
 }).fields([
-  // Good Media (single file per field)
   { name: "image_specification", maxCount: 1 },
   { name: "image_packing_condition", maxCount: 1 },
   { name: "image_item_spec_mentioned", maxCount: 1 },
@@ -126,67 +143,22 @@ const upload = multer({
   { name: "image_side_view_thickness", maxCount: 1 },
   { name: "image_stock_condition_packing", maxCount: 1 },
   { name: "video_item_inspection", maxCount: 1 },
-  // Defect Media (multiple files per field, e.g., up to 10)
   { name: "package_defect_images", maxCount: 10 },
   { name: "physical_defect_images", maxCount: 10 },
   { name: "other_defect_images", maxCount: 10 },
 ]);
 
-// Middleware to handle Multer errors specifically
+// Middleware to handle Multer-specific errors
 const handleUploadErrors = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    console.error("Multer Upload Error:", err);
-    return res.status(400).json({
-      message: `File upload error (Multer): ${err.message}`,
-      code: err.code,
-    });
+    return res
+      .status(400)
+      .json({ message: `File upload error: ${err.message}`, code: err.code });
   } else if (err) {
-    // Other errors that might occur during file processing by Multer/storage
-    console.error(
-      "Generic Upload Error (possibly from storage.destination):",
-      err
-    );
+    // For other errors (e.g., from destination function)
     return res
       .status(400)
       .json({ message: `File upload error: ${err.message}` });
-  }
-  next(); // Proceed if no Multer-related error
-};
-
-// Middleware to fetch material_code and plant for PUT requests (for multer pathing)
-const attachSubmissionDetailsForUpdate = async (req, res, next) => {
-  if (req.method === "PUT" && req.params.submissionId) {
-    try {
-      const [rows] = await pool.query(
-        "SELECT material_code, plant FROM material_data_submissions WHERE id = ?",
-        [req.params.submissionId]
-      );
-      if (rows.length > 0) {
-        req.submissionDetailsForPath = {
-          // Attach to request object for multer
-          material_code: rows[0].material_code,
-          plant: rows[0].plant, // 'plant' in DB is the plant_code
-        };
-      } else {
-        // If submission not found, it's a 404. Let controller handle full 404 response.
-        // For multer pathing, this means it might fail if it proceeds.
-        // It's better to stop here to prevent multer from attempting to use undefined paths.
-        return res
-          .status(404)
-          .json({
-            message:
-              "Submission not found, cannot determine upload path for update.",
-          });
-      }
-    } catch (error) {
-      console.error(
-        "Error fetching submission details for multer pathing:",
-        error
-      );
-      return res
-        .status(500)
-        .json({ message: "Server error preparing for file update." });
-    }
   }
   next();
 };
@@ -194,29 +166,35 @@ const attachSubmissionDetailsForUpdate = async (req, res, next) => {
 // All routes below are protected
 router.use(authenticateToken);
 
+// POST route for new submissions
 router.post(
   "/submit",
-  // For POST, multer's destination will use req.body.material_code and req.body.plant
-  upload, // Handles file parsing and saving
-  handleUploadErrors, // Catches errors from multer
-  submissionController.submitMaterialData // Proceeds if upload is fine
+  canSubmitData,
+  (req, res, next) => {
+    // Use a wrapper to call multer and its error handler
+    upload(req, res, (err) => handleUploadErrors(err, req, res, next));
+  },
+  submissionController.submitMaterialData
 );
 
-router.get("/:submissionId", submissionController.getSubmissionDetails);
-
-router.get(
-  "/latest/:materialCode", // materialCode in path
-  submissionController.getLatestSubmissionByMaterialCode // Expects plantCode as query param
-);
-
+// PUT route for updating submissions
 router.put(
   "/update/:submissionId",
-  attachSubmissionDetailsForUpdate, // Must run before 'upload' to set details for multer's destination
-  upload, // Handles new file parsing and saving
-  handleUploadErrors, // Catches errors from multer
-  submissionController.updateMaterialData // Proceeds if upload fine, handles DB update & old file cleanup
+  canSubmitData,
+  attachSubmissionDetailsForUpdate,
+  (req, res, next) => {
+    // Wrapper for multer on update
+    upload(req, res, (err) => handleUploadErrors(err, req, res, next));
+  },
+  submissionController.updateMaterialData
 );
 
+// GET routes are accessible to all authenticated users; controllers handle role-based filtering
+router.get("/:submissionId", submissionController.getSubmissionDetails);
+router.get(
+  "/latest/:materialCode",
+  submissionController.getLatestSubmissionByMaterialCode
+);
 router.get("/completed/all", submissionController.getCompletedSubmissions);
 
 module.exports = router;

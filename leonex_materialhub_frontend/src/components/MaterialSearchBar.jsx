@@ -1,3 +1,4 @@
+//component/MaterialSearchBar.jsx
 import React, { useState, useCallback } from "react"; // Removed useEffect as it was unused with new logic
 import { FaSearch, FaSpinner } from "react-icons/fa";
 import _ from "lodash";

@@ -1,3 +1,4 @@
+//component/MaterialDetails.jsx
 import React, { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { FaPrint } from "react-icons/fa";
@@ -56,7 +57,7 @@ const MaterialDetails = ({ material }) => {
           <strong>UOM:</strong> {material.uom}
         </div>
         <div className="detail-item">
-          <strong>Plant:</strong> {material.plant_name} ({material.plant})
+          <strong>Plant:</strong> {material.plantlocation} ({material.plant})
         </div>
         <div className="detail-item">
           <strong>Category:</strong> {material.category}

@@ -1,0 +1,124 @@
+// src/scss/_forms.scss
+@use "utils/variables" as var;
+@use "utils/mixins" as mix;
+@use "sass:color";
+
+.form-group {
+  margin-bottom: var.$spacer-4;
+
+  label {
+    display: block;
+    font-size: var.$font-size-sm;
+    font-weight: var.$font-weight-medium;
+    margin-bottom: var.$spacer-2;
+    color: var.$text-secondary;
+  }
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: var.$spacer-2 var.$spacer-3;
+  font-size: var.$font-size-base;
+  font-weight: var.$font-weight-regular;
+  line-height: var.$line-height-base;
+  color: var.$text-primary;
+  background-color: var.$surface-color;
+  background-clip: padding-box;
+  border: var.$border-width solid var.$border-color;
+  border-radius: var.$border-radius;
+  transition: border-color var.$transition-duration,
+    box-shadow var.$transition-duration;
+
+  @include mix.placeholder {
+    color: var.$text-muted;
+    opacity: 1;
+  }
+
+  &:focus {
+    outline: 0;
+    border-color: var.$primary;
+    box-shadow: var.$box-shadow-focus;
+  }
+
+  &:disabled,
+  &[readonly] {
+    background-color: var.$bg-color;
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.checkbox-group,
+.radio-group-row {
+  display: flex;
+  align-items: center;
+  gap: var.$spacer-3;
+  padding: var.$spacer-2 0;
+
+  input {
+    height: 1.15em;
+    width: 1.15em;
+    accent-color: var.$primary;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  label {
+    margin: 0;
+    font-weight: var.$font-weight-regular;
+    color: var.$text-primary;
+    cursor: pointer;
+  }
+}
+
+.react-select-container {
+  .react-select__control {
+    border-color: var.$border-color;
+    box-shadow: none;
+    transition: var.$transition-default;
+    min-height: 42px; // Match form control height
+    &:hover {
+      border-color: var.$primary;
+    }
+  }
+  .react-select__control--is-focused {
+    border-color: var.$primary;
+    box-shadow: var.$box-shadow-focus;
+  }
+  .react-select__option--is-focused {
+    background-color: color.adjust(var.$primary, $alpha: -0.9);
+  }
+  .react-select__option--is-selected {
+    background-color: var.$primary;
+    color: white;
+    &:hover {
+      background-color: var.$primary-dark;
+    }
+  }
+}
+
+.react-datepicker-wrapper {
+  display: block;
+}
+
+.form-grid {
+  display: grid;
+  gap: var.$spacer-3;
+
+  @include mix.screen-breakpoint(sm) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var.$spacer-4;
+  }
+  @include mix.screen-breakpoint(lg) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .full-width {
+    grid-column: 1 / -1;
+  }
+}

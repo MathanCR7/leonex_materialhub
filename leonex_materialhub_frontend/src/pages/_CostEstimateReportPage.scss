@@ -1,0 +1,287 @@
+/* ==========================================================================
+   Cost Estimate Report Page Styles
+   ========================================================================== */
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+// Base styles for the page container
+.cost-estimate-report-page {
+  .report-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; // Increased gap for better separation
+  }
+
+  // Common card styling
+  .card-style {
+    background-color: #ffffff;
+    border-radius: 12px; // Softer radius
+    padding: 1.5rem;
+    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.07);
+    border: 1px solid var(--border-color, #e5e7eb);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1.5rem 0;
+    color: var(--primary-color, #2563eb);
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+  }
+
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    // Custom scrollbar for a cleaner look
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+  }
+
+  /* ==========================================================================
+     Summary Card & Table
+     ========================================================================== */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+
+    th,
+    td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color, #e5e7eb);
+    }
+
+    th {
+      font-weight: 600;
+      color: var(--text-color-light, #6b7280);
+      background-color: #f9fafb;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background-color 0.2s ease, box-shadow 0.2s ease,
+        transform 0.2s ease;
+
+      &:last-child td {
+        border-bottom: none;
+      }
+
+      &:hover {
+        background-color: #f7faff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      }
+
+      &.active {
+        background-color: #eef4ff;
+        font-weight: 600;
+        color: var(--primary-color, #1e40af);
+
+        td {
+          border-bottom-color: transparent; // Hide border on active row for seamless look
+        }
+      }
+    }
+
+    .details-toggle {
+      text-align: center;
+      color: var(--primary-color, #2563eb);
+      font-size: 1.4rem;
+      width: 50px; // Fixed width for alignment
+    }
+    .details-col-header {
+      text-align: center;
+    }
+  }
+
+  /* ==========================================================================
+     Details Card & Table
+     ========================================================================== */
+  .details-card {
+    // Smooth animated entry for the details card
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap; // Allow wrapping on small screens
+    margin-bottom: 1rem;
+  }
+
+  .details-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+
+    th,
+    td {
+      padding: 0.75rem 0.6rem;
+      border: 1px solid var(--border-color, #e5e7eb);
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: var(--text-color-light, #6b7280);
+      position: sticky;
+      top: 0;
+      z-index: 2; // Ensure header is above body
+    }
+
+    // Sub-header for categories
+    th.sub-total {
+      background-color: #f0f3f8;
+    }
+
+    // Zebra-striping for better readability
+    tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+    tbody tr:nth-child(even) {
+      background-color: #fcfdff;
+    }
+
+    tbody tr:hover {
+      background-color: #f0f7ff;
+    }
+
+    .material-cell {
+      text-align: left;
+      small {
+        color: var(--text-color-light, #6b7280);
+        display: block;
+      }
+    }
+
+    .total-col {
+      background-color: #eef4ff;
+      font-weight: 700;
+      color: var(--primary-color, #1e40af);
+    }
+
+    .no-data-cell {
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-color-light, #6b7280);
+      font-style: italic;
+    }
+
+    // Sticky columns for better context on horizontal scroll
+    .sticky-col,
+    .sticky-col-2 {
+      position: sticky;
+      left: 0;
+      background-color: #fff; // Match row background on hover
+      z-index: 1;
+      border-right: 2px solid #d1d5db;
+    }
+    .sticky-col {
+      width: 80px;
+    }
+    .sticky-col-2 {
+      left: 80px; // Width of the first sticky column
+      width: 150px;
+    }
+
+    // Ensure sticky header is above sticky columns
+    thead th.sticky-col,
+    thead th.sticky-col-2 {
+      z-index: 3;
+    }
+  }
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+@media (max-width: 768px) {
+  .cost-estimate-report-page {
+    .card-style {
+      padding: 1rem;
+    }
+
+    .card-header {
+      font-size: 1.1rem;
+    }
+
+    // Transform summary table to a list view on mobile
+    .summary-table {
+      thead {
+        display: none; // Hide table header
+      }
+
+      tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 8px;
+        padding: 1rem;
+        position: relative;
+
+        &.active {
+          box-shadow: 0 0 0 2px var(--primary-color, #2563eb);
+        }
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: none;
+
+        &::before {
+          content: attr(data-label); // Use data-label for pseudo-headers
+          font-weight: 600;
+          color: var(--text-color-light, #6b7280);
+          margin-right: 1rem;
+        }
+      }
+
+      .details-toggle {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0;
+        &::before {
+          display: none; // Hide pseudo-header for the icon
+        }
+      }
+    }
+  }
+}

@@ -240,7 +240,9 @@ export const generatePdfForSubmission = async (submissionData) => {
   yPos = detailPdf("Material Code", submissionData.material_code);
   yPos = detailPdf(
     "Plant Location",
-    `${submissionData.plant_name || "N/A"} (${submissionData.plant || "N/A"})`
+    `${submissionData.plantlocation || "N/A"} (${
+      submissionData.plant || "N/A"
+    })`
   );
   yPos = detailPdf("Bin Location", submissionData.bin_location || "N/A");
   yPos = detailPdf(
@@ -570,7 +572,9 @@ export const generateWordForSubmission = async (submissionData) => {
   children.push(
     eleganteCreateDetailParagraph(
       "Plant Location",
-      `${submissionData.plant_name || "N/A"} (${submissionData.plant || "N/A"})`
+      `${submissionData.plantlocation || "N/A"} (${
+        submissionData.plant || "N/A"
+      })`
     )
   );
   children.push(

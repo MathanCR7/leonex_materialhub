@@ -1,7 +1,7 @@
-// pages/MaterialCodePage.jsx
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { searchMasterMaterials } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 import _ from "lodash";
 import { toast } from "react-toastify";
 import {
@@ -21,11 +21,12 @@ const MaterialCodePage = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (location.state?.error) {
       toast.error(location.state.error);
-      navigate(location.pathname, { replace: true, state: {} }); // Clear error from state
+      navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location, navigate]);
 
@@ -39,7 +40,7 @@ const MaterialCodePage = () => {
           const response = await searchMasterMaterials(searchQuery);
           setSuggestions(response.data || []);
           if ((response.data || []).length === 0) {
-            setError("No materials found matching your query."); // Set error for no results
+            setError("No materials found matching your query.");
           }
         } catch (err) {
           console.error("Error fetching material suggestions:", err);
@@ -53,7 +54,7 @@ const MaterialCodePage = () => {
         }
       } else {
         setSuggestions([]);
-        setError(""); // Clear error if query is too short
+        setError("");
       }
     }, 500),
     []
@@ -68,38 +69,41 @@ const MaterialCodePage = () => {
   const handleSuggestionClick = (material) => {
     if (!material.plantcode) {
       toast.error("Selected material is missing plant code. Cannot proceed.");
-      console.error("Clicked material missing plantcode:", material);
       return;
     }
-    // Navigate with materialCode in path and plantCode as query param
+    if (!material.plantlocation) {
+      toast.error(
+        "Selected material is missing plant location. Cannot proceed."
+      );
+      return;
+    }
     navigate(
-      `/material-form/${material.material_code}?plantCode=${material.plantcode}`,
+      `/material-form/${material.material_code}?plantCode=${
+        material.plantcode
+      }&plantlocation=${encodeURIComponent(material.plantlocation)}`,
       {
         state: {
-          submissionId: material.submission_id, // Pass submissionId if exists for this material-plant
-          // Optional: pass description or other details to pre-fill while form loads fully
-          // materialDescription: material.material_description,
+          submissionId: material.submission_id,
         },
       }
     );
   };
 
-  // Effect to clear suggestions/error if query becomes too short
-  useEffect(() => {
-    if (query.trim().length <= 1) {
-      if (suggestions.length > 0) setSuggestions([]);
-      if (error) setError(""); // Clear error if query is too short
+  const pageSubtitle = () => {
+    if (user.role === "thirdparties") {
+      return "Find materials by Mask Code or description within your assigned plants.";
     }
-  }, [query, suggestions.length, error]);
+    if (user.role === "cataloguer") {
+      return "Find materials by code or description within your assigned plants.";
+    }
+    return "Find materials by code or description across all plants.";
+  };
 
   return (
     <div className="container material-code-page">
       <header className="page-header">
-        <h1>Material Code Lookup</h1>
-        <p className="page-subtitle">
-          Find materials by code or description. Results will show materials per
-          plant.
-        </p>
+        <h1>Material Lookup</h1>
+        <p className="page-subtitle">{pageSubtitle()}</p>
       </header>
 
       <div className="search-bar-wrapper card-style">
@@ -110,26 +114,28 @@ const MaterialCodePage = () => {
             className="search-input form-control"
             value={query}
             onChange={handleChange}
-            placeholder="Enter Material Code or Description (min. 2 chars)..."
+            placeholder={
+              user.role === "thirdparties"
+                ? "Enter Mask Code or Description..."
+                : "Enter Material Code or Description..."
+            }
             aria-label="Search materials"
           />
           {isLoading && <FaSpinner className="spinner-icon" />}
         </div>
       </div>
 
-      {error &&
-        !isLoading && ( // Show error only if not loading
-          <div className="search-message error-message alert alert-danger">
-            <FaExclamationCircle /> {error}
-          </div>
-        )}
+      {error && !isLoading && (
+        <div className="search-message error-message alert alert-danger">
+          <FaExclamationCircle /> {error}
+        </div>
+      )}
 
       {!isLoading && suggestions.length > 0 && (
         <ul className="suggestions-list material-code-suggestions card-style">
-          {suggestions.map((material) => (
+          {suggestions.map((material, index) => (
             <li
-              // Using plantcode in the key is essential for uniqueness
-              key={`${material.material_code}-${material.plantcode}`}
+              key={`${material.material_code}-${material.plantcode}-${index}`}
               onClick={() => handleSuggestionClick(material)}
               title={`Select ${material.material_code} for Plant ${
                 material.plantcode || "N/A"
@@ -144,16 +150,20 @@ const MaterialCodePage = () => {
                 <div className="suggestion-main-info">
                   <div className="suggestion-code">
                     <strong>{material.material_code}</strong>
+                    {user.role === "admin" && material.mask_code && (
+                      <span className="mask-code-lookup">
+                        (Mask: {material.mask_code})
+                      </span>
+                    )}
                   </div>
                   <div className="suggestion-description">
                     {material.material_description}
                   </div>
                 </div>
+
                 <div className="suggestion-details">
                   {material.plantcode && (
                     <span className="detail-item plant-code-badge">
-                      {" "}
-                      {/* Added class for styling */}
                       <FaBuilding /> Plant: {material.plantcode}
                     </span>
                   )}
@@ -172,8 +182,7 @@ const MaterialCodePage = () => {
               <div className="suggestion-status">
                 {material.submission_id !== null &&
                 material.submission_id !== undefined ? (
-                  material.is_completed === 1 || // Handle both boolean and integer from DB
-                  material.is_completed === true ? (
+                  material.is_completed ? (
                     <span className="status-badge completed">Completed</span>
                   ) : (
                     <span className="status-badge not-completed">
@@ -190,16 +199,6 @@ const MaterialCodePage = () => {
           ))}
         </ul>
       )}
-
-      {/* This specific message for "no results after valid search" is now handled by setError above */}
-      {/* {!isLoading &&
-        !error && // Ensure no other error is present
-        query.trim().length > 1 &&
-        suggestions.length === 0 && (
-          <div className="search-message info-message alert alert-info card-style">
-            No materials found matching your query.
-          </div>
-        )} */}
     </div>
   );
 };

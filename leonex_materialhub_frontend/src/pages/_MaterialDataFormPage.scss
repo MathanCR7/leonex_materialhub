@@ -1,340 +1,240 @@
 // src/pages/_MaterialDataFormPage.scss
+
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
-@use "../scss/buttons"; // Ensure buttons are imported
 @use "sass:color";
 
 .material-data-form-page {
+  animation: fadeIn 0.4s ease-out;
+
   .page-header {
-    margin-bottom: var.$spacer-5; // More space after header
+    margin-bottom: var.$spacer-4;
+    padding: var.$spacer-4;
+    background-color: var.$surface-light;
+    border-radius: var.$border-radius-lg;
+    border: 1px solid var.$border-color-light;
+
     h1 {
-      // General h1 styles from _typography.scss or _base.scss
-      .material-code-highlight {
-        color: var.$accent-dark; // Use a darker accent for readability
-        font-weight: var.$font-weight-bold;
-        background-color: color.adjust(
-          var.$accent,
-          $alpha: -0.85
-        ); // Very light accent bg
-        padding: var.$spacer-1 var.$spacer-2;
-        border-radius: var.$border-radius-sm;
-        margin: 0 var.$spacer-1;
-      }
-      .plant-code-header-info {
-        font-size: 0.8em;
-        font-weight: var.$font-weight-medium;
-        margin-left: var.$spacer-2;
-        padding: var.$spacer-1 var.$spacer-2;
-        background-color: var.$border-color-light;
-        border-radius: var.$border-radius;
-        color: var.$text-secondary;
-        display: inline-flex;
-        align-items: center;
-        border: var.$border-width solid var.$muted-border-color;
-        svg {
-          margin-right: var.$spacer-1;
-          color: var.$secondary;
-        }
-      }
-    }
-  }
-
-  .material-description-display {
-    background-color: color.adjust(
-      var.$info,
-      $alpha: -0.92
-    ); // Even lighter info blue
-    padding: var.$spacer-3 var.$spacer-4;
-    border-radius: var.$border-radius;
-    margin-bottom: var.$spacer-5;
-    border-left: 5px solid var.$info; // Thicker accent border
-    display: flex;
-    align-items: flex-start; // Align icon to top with text
-    color: var.$text-primary;
-    font-size: 0.95rem;
-    line-height: var.$line-height-base;
-
-    svg {
-      color: var.$info;
-      margin-right: var.$spacer-3;
-      font-size: 1.5em; // Larger icon
-      flex-shrink: 0;
-      margin-top: 0.1em; // Fine-tune alignment
-    }
-    strong {
+      font-size: 1.5rem;
       color: var.$text-primary;
-      margin-right: var.$spacer-1;
-      font-weight: var.$font-weight-semibold;
+      margin-bottom: var.$spacer-3;
+      .material-code-highlight {
+        color: var.$primary;
+        font-weight: var.$font-weight-semibold;
+      }
+      .mask-code-header-display {
+        font-size: var.$font-size-sm;
+        color: var.$text-muted;
+        font-weight: var.$font-weight-regular;
+      }
+    }
+
+    .material-description-display {
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-2;
+      padding: var.$spacer-2;
+      background-color: var.$surface-color;
+      border-radius: var.$border-radius;
+      font-size: var.$font-size-sm;
+      color: var.$text-secondary;
+      border: 1px solid var.$border-color-light;
+
+      &:not(:last-child) {
+        margin-bottom: var.$spacer-2;
+      }
+
+      svg {
+        color: var.$primary;
+        flex-shrink: 0;
+      }
     }
   }
 
   .material-form {
-    // .card-style is applied in JSX
-  }
+    fieldset[disabled] {
+      opacity: 0.8;
+      pointer-events: none;
+    }
 
-  .form-actions-top {
-    margin-bottom: var.$spacer-4;
-    padding-bottom: var.$spacer-4;
-    border-bottom: var.$border-width solid var.$border-color-light;
-    display: flex; // To align button if needed
-    justify-content: flex-end; // Example: align edit button to the right
+    .card-style {
+      background-color: var.$surface-color;
+      padding: var.$spacer-3;
+      border-radius: var.$border-radius-lg;
+      border: 1px solid var.$border-color-light;
+      box-shadow: var.$box-shadow-sm;
+
+      @include mix.screen-breakpoint(md) {
+        padding: var.$spacer-4;
+      }
+    }
   }
 
   .form-section {
-    margin-bottom: var.$spacer-5;
-    padding-bottom: var.$spacer-4;
-    border-bottom: var.$border-width solid var.$border-color-light;
-
-    &:last-child {
-      border-bottom: none;
-      margin-bottom: 0; // No margin for the last section before actions
-    }
-
-    .form-section-title {
-      font-size: 1.5rem; // Larger section titles
-      color: var.$primary-dark;
+    padding-bottom: var.$spacer-3;
+    &:not(:last-child) {
       margin-bottom: var.$spacer-4;
-      padding-bottom: var.$spacer-2;
-      border-bottom: 2px solid var.$primary-light;
-      display: inline-block; // To make border only as wide as text
+      border-bottom: 1px solid var.$border-color-light;
+    }
+    .form-section-title {
+      font-size: 1.2rem;
+      color: var.$text-primary;
+      font-weight: var.$font-weight-medium;
+      margin-bottom: var.$spacer-4;
     }
   }
 
-  // .form-grid, .form-group, label, .form-control should be styled globally
-  // Add some specific enhancements if needed:
-  .form-control[readonly] {
-    background-color: var.$bg-color; // Clearer indication of readonly
-    cursor: not-allowed;
-    // border-style: dashed; // Optional: different border for readonly
-  }
-  .form-group small.text-danger {
-    // For "Counts exceed SOH"
-    display: block; // Ensure it takes its own line
-    margin-top: var.$spacer-1;
-    font-weight: var.$font-weight-medium;
-  }
+  .form-grid {
+    display: grid;
+    gap: var.$spacer-3;
+    grid-template-columns: repeat(2, 1fr);
 
-  .media-uploads-section {
-    .media-grid {
-      display: grid;
-      gap: var.$spacer-4;
-      grid-template-columns: 1fr; // Default to 1 column on mobile
-
-      @include mix.screen-breakpoint(md-up) {
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      }
-      @include mix.screen-breakpoint(lg-up) {
-        // Example: Ensure max 2 columns for very wide screens if auto-fit makes too many
-        // grid-template-columns: repeat(2, 1fr);
-      }
+    @include mix.screen-breakpoint(md) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    @include mix.screen-breakpoint(lg) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    @include mix.screen-breakpoint(xl) {
+      grid-template-columns: repeat(5, 1fr);
     }
   }
 
-  .defects-section {
-    .defect-category-group {
-      @include mix.card-style(
-        $padding: var.$spacer-4,
-        $margin-bottom: var.$spacer-4,
-        $background: var.$surface-light,
-        // Slightly different bg for these groups
-        $border-radius: var.$border-radius-md
-      );
-      border-left: 4px solid var.$secondary-light; // Accent border
+  .media-grid {
+    display: grid;
+    gap: var.$spacer-3;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
-      h3 {
-        font-size: 1.25rem;
-        color: var.$secondary-dark;
-        margin-top: 0;
-        margin-bottom: var.$spacer-3;
-      }
+    @include mix.screen-breakpoint(lg) {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
+  }
 
-    .defect-image-controls {
-      display: flex;
-      gap: var.$spacer-2;
+  .defects-grid-container {
+    display: grid;
+    gap: var.$spacer-3;
+    grid-template-columns: 1fr;
+
+    @include mix.screen-breakpoint(md) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @include mix.screen-breakpoint(lg) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .defect-category-group {
+    background-color: var.$surface-light;
+    padding: var.$spacer-3;
+    border-radius: var.$border-radius;
+    border: 1px solid var.$border-color-light;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+
+    h3 {
+      font-size: 1rem;
+      color: var.$text-primary;
       margin-bottom: var.$spacer-3;
-      .btn {
-        // Style buttons used for file/camera trigger
-        flex-grow: 1; // Make buttons take equal space
-        @include mix.screen-breakpoint(sm-up) {
-          flex-grow: 0; // Revert to auto width on larger screens
-        }
-      }
+      font-weight: var.$font-weight-medium;
     }
 
     .defect-previews {
       display: flex;
       flex-wrap: wrap;
       gap: var.$spacer-2;
-      margin-top: var.$spacer-3;
+      margin-top: var.$spacer-2;
 
-      .preview-item.defect-preview-item {
+      .preview-item {
         position: relative;
-        border: var.$border-width solid var.$muted-border-color;
-        padding: var.$spacer-1;
+        width: 60px;
+        height: 60px;
+        border: 1px solid var.$border-color;
         border-radius: var.$border-radius;
-        background-color: var.$surface-color;
-        box-shadow: var.$box-shadow-sm;
-        width: 120px; // Slightly larger previews
-        height: 120px;
-        @include mix.flex-center; // Center the image
+        overflow: hidden;
 
         img {
-          max-width: 100%;
-          max-height: 100%;
+          width: 100%;
+          height: 100%;
           object-fit: cover;
-          display: block;
-          border-radius: calc(var.$border-radius - var.$spacer-1);
         }
 
         .btn-remove-defect-img {
           position: absolute;
-          top: calc(var.$spacer-1 * -1 - 2px); // Adjust to sit nicely on border
-          right: calc(var.$spacer-1 * -1 - 2px);
-          background-color: color.adjust(
-            var.$danger,
-            $alpha: -0.15
-          ); // Slightly transparent
-          color: var.$text-on-danger;
-          border: none;
+          top: 2px;
+          right: 2px;
+          background-color: rgba(var.$danger, 0.7);
+          color: white;
           border-radius: 50%;
-          width: 28px; // Larger remove button
-          height: 28px;
-          font-size: 0.8rem;
-          line-height: 28px;
-          text-align: center;
-          cursor: pointer;
+          width: 20px;
+          height: 20px;
+          padding: 0;
           @include mix.flex-center;
-          box-shadow: var.$box-shadow;
-          transition: background-color var.$transition-duration-short,
-            transform var.$transition-duration-short;
-
+          border: none;
+          cursor: pointer;
+          transition: var.$transition-default;
           &:hover {
             background-color: var.$danger;
             transform: scale(1.1);
           }
-          svg {
-            margin: 0;
-          } // Ensure icon is centered
         }
       }
     }
   }
 
-  .completion-checkbox {
-    margin-top: var.$spacer-5;
-    padding: var.$spacer-3;
+  .missing-defects-group {
+    // --- FIX: Declarations are now listed BEFORE the nested rule ---
     background-color: var.$surface-light;
-    border: var.$border-width solid var.$border-color-light;
+    padding: var.$spacer-3;
     border-radius: var.$border-radius;
-    display: flex;
-    align-items: center;
+    border: 1px solid var.$border-color-light;
+    margin: 0; // Reset default margin from .form-group
 
-    input[type="checkbox"] {
-      // Style checkbox more explicitly if needed
-      margin-right: var.$spacer-2;
-      width: 1.2em;
-      height: 1.2em;
-      // Consider custom checkbox styles if browser defaults are not sufficient
+    // Span full width on larger screens (nested rule is now last)
+    @include mix.screen-breakpoint(lg) {
+      grid-column: 1 / -1;
     }
-    label {
-      margin-bottom: 0; // Remove default label margin
-      font-weight: var.$font-weight-medium;
-      color: var.$text-secondary;
-    }
+  }
+
+  .completion-card {
+    margin-top: var.$spacer-4;
+    padding: var.$spacer-3;
+    margin-bottom: var.$spacer-3;
   }
 
   .completion-status-view {
-    margin-top: var.$spacer-4;
-    font-weight: var.$font-weight-semibold;
-    padding: var.$spacer-3;
-    background-color: color.adjust(var.$success, $alpha: -0.9);
-    border-left: 5px solid var.$success;
+    margin-top: 0;
+    margin-bottom: var.$spacer-4;
+    font-weight: var.$font-weight-medium;
+    padding: var.$spacer-3 var.$spacer-4;
     border-radius: var.$border-radius;
-    color: var.$success; // Use success color for text too
-  }
-  .completion-status-view:not(:has(strong:empty)) {
-    // If not completed, make it warning
-    & strong:not(:contains("Completed")) {
-      // This CSS selector might not work robustly
-      // JS logic sets formData.is_completed, use that to apply class for styling
-      // Example: if formData.is_completed is false, add class "status-draft"
+
+    &.status-completed {
+      background-color: color.adjust(var.$success, $alpha: -0.9);
+      border-left: 4px solid var.$success;
+      color: color.adjust(var.$success, $lightness: -10%);
+    }
+    &.status-draft {
+      background-color: color.adjust(var.$warning, $alpha: -0.9);
+      border-left: 4px solid var.$warning;
+      color: color.adjust(var.$warning, $lightness: -25%);
     }
   }
-  .status-draft {
-    // Add this class via JS if formData.is_completed is false
-    background-color: color.adjust(var.$warning, $alpha: -0.9);
-    border-left-color: var.$warning;
-    color: color.adjust(var.$warning, $lightness: -25%);
-  }
 
-  .form-submission-error.alert-danger {
-    margin-top: var.$spacer-4;
-    // Uses global .alert-danger styling
+  .form-actions-top {
+    border-bottom: 1px solid var.$border-color-light;
+    padding-bottom: var.$spacer-3;
+    margin-bottom: var.$spacer-4;
+    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
   }
 
   .form-actions-bottom {
-    margin-top: var.$spacer-5;
-    padding-top: var.$spacer-4;
-    border-top: var.$border-width solid var.$border-color-light;
+    margin-top: var.$spacer-4;
+    padding-top: var.$spacer-3;
+    border-top: 1px solid var.$border-color-light;
     display: flex;
-    flex-direction: column; // Stack buttons on mobile
-    gap: var.$spacer-3;
-
-    @include mix.screen-breakpoint(sm-up) {
-      flex-direction: row; // Side-by-side on larger screens
-      justify-content: flex-end; // Align to the right
-    }
-
-    .btn {
-      // Style all buttons in this container
-      width: 100%; // Full width on mobile
-
-      @include mix.screen-breakpoint(sm-up) {
-        width: auto;
-        min-width: 180px; // Decent min-width for action buttons
-      }
-    }
-    .btn-primary.btn-submit-material {
-      // The main submit/update button
-      @extend .btn-lg; // Make it large by default
-    }
-  }
-
-  // Disabled fieldset styling for view-only mode
-  fieldset:disabled {
-    // Some browsers make text very light, override if needed
-    .form-control,
-    textarea,
-    select {
-      color: var.$text-secondary !important; // Ensure text is readable
-      background-color: color.adjust(var.$bg-color, $lightness: -2%) !important;
-      opacity: 0.85 !important; // Make it slightly less opaque than default disabled
-      cursor: default; // Change cursor to default, not 'not-allowed' for viewing
-    }
-    .form-control[readonly] {
-      // Explicit readonly should still look readonly
-      background-color: var.$bg-color !important;
-    }
-
-    // For ImageUploadField and other custom components, ensure they visually appear disabled
-    .image-upload-field .upload-controls-wrapper {
-      border-color: var.$border-color-light;
-      background-color: var.$bg-color;
-      cursor: default;
-      &:hover {
-        border-color: var.$border-color-light; // No hover effect
-      }
-    }
-    .image-upload-field .btn-upload,
-    .defect-image-controls .btn,
-    .btn-remove-defect-img,
-    .completion-checkbox input[type="checkbox"] {
-      display: none !important; // Hide interactive elements in view-only
-    }
-    .defect-image-controls {
-      // Remove margin if controls are hidden
-      margin-bottom: 0;
-    }
+    justify-content: flex-end;
   }
 }

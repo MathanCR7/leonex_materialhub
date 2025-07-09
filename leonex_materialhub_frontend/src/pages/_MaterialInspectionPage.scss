@@ -1,0 +1,334 @@
+@use "../scss/utils/variables" as var;
+@use "../scss/utils/mixins" as mix;
+
+.inspection-page {
+  background-color: var.$bg-color;
+  min-height: 100vh;
+  padding: var.$spacer-4 var.$spacer-3; // Smaller padding for mobile
+
+  @include mix.screen-breakpoint(md) {
+    padding: var.$spacer-5 var.$spacer-6; // Larger padding for desktop
+  }
+}
+
+.inspection-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var.$spacer-5;
+  padding-bottom: var.$spacer-4;
+  border-bottom: var.$border-width solid var.$border-color;
+  gap: var.$spacer-4;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: var.$spacer-3;
+    min-width: 0; // Allow title to shrink
+  }
+
+  .back-link {
+    @include mix.flex-center;
+    font-size: 1.25rem;
+    color: var.$text-secondary;
+    background-color: var.$surface-color;
+    border-radius: var.$border-radius-pill;
+    box-shadow: var.$box-shadow-sm;
+    transition: var.$transition-default;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+
+    &:hover {
+      color: var.$primary;
+      background-color: var.$primary-light;
+      transform: scale(1.05);
+    }
+  }
+
+  .header-title {
+    h1 {
+      font-size: 1.25rem; // Reduced for mobile
+      font-weight: var.$font-weight-bold;
+      margin: 0;
+      color: var.$text-primary;
+      line-height: var.$line-height-heading;
+    }
+    .material-code-highlight {
+      font-family: monospace;
+      background-color: var.$primary-light;
+      color: var.$primary-dark;
+      padding: var.$spacer-1 var.$spacer-2;
+      border-radius: var.$border-radius-sm;
+      font-size: 0.8rem;
+      font-weight: var.$font-weight-semibold;
+      display: inline-block;
+      margin-top: var.$spacer-1;
+    }
+
+    @include mix.screen-breakpoint(md) {
+      h1 {
+        font-size: 1.75rem; // Larger on desktop
+      }
+    }
+  }
+
+  .header-logo {
+    max-height: 35px;
+    width: auto;
+    display: none; // Hide on small screens to save space
+
+    @include mix.screen-breakpoint(sm) {
+      display: block; // Show on larger screens
+      max-height: 40px;
+    }
+  }
+}
+
+.inspection-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var.$spacer-4;
+  align-items: start;
+
+  @include mix.screen-breakpoint(lg) {
+    grid-template-columns: 400px 1fr; // Fixed width for details
+    gap: var.$spacer-5;
+  }
+  @include mix.screen-breakpoint(xl) {
+    grid-template-columns: 450px 1fr;
+  }
+}
+
+.details-column,
+.media-column {
+  display: flex;
+  flex-direction: column;
+  gap: var.$spacer-4;
+
+  @include mix.screen-breakpoint(lg) {
+    gap: var.$spacer-5;
+  }
+}
+
+.details-card {
+  h2 {
+    font-size: 1.25rem;
+    color: var.$text-primary;
+    margin-top: 0;
+    margin-bottom: var.$spacer-4;
+    padding-bottom: var.$spacer-2;
+    border-bottom: 2px solid var.$primary;
+    display: inline-block;
+    font-weight: var.$font-weight-semibold;
+  }
+
+  dl {
+    margin: 0;
+    display: grid;
+    gap: var.$spacer-3;
+  }
+
+  // Use the card-style mixin for consistent appearance
+  @include mix.card-style(
+    var.$spacer-4,
+    var.$border-radius,
+    var.$surface-color
+  );
+
+  @include mix.screen-breakpoint(md) {
+    // Override padding from mixin for larger screens if needed
+    padding: var.$spacer-5;
+  }
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column; // Stacked by default for mobile
+  gap: var.$spacer-1;
+  padding-bottom: var.$spacer-3;
+  border-bottom: 1px solid var.$border-color-light;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  dt {
+    font-weight: var.$font-weight-semibold;
+    color: var.$text-secondary;
+    font-size: var.$font-size-sm;
+  }
+
+  dd {
+    margin: 0;
+    color: var.$text-primary;
+    font-weight: var.$font-weight-medium;
+    word-break: break-word;
+    font-size: var.$font-size-base;
+  }
+
+  // Switch to two-column layout on larger screens
+  @include mix.screen-breakpoint(sm) {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: var.$spacer-4;
+    align-items: center;
+
+    dt {
+      font-size: var.$font-size-base;
+    }
+  }
+}
+
+.defect-section {
+  padding-top: var.$spacer-4;
+  margin-top: var.$spacer-4;
+  border-top: 1px dashed var.$border-color;
+
+  &:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  h4 {
+    font-size: 1.05rem;
+    color: var.$text-primary;
+    margin-bottom: var.$spacer-2;
+    font-weight: var.$font-weight-semibold;
+  }
+
+  p {
+    margin: 0 0 var.$spacer-3 0;
+    color: var.$text-secondary;
+    font-size: var.$font-size-sm;
+    line-height: var.$line-height-base;
+    strong {
+      color: var.$text-primary;
+    }
+  }
+}
+
+.image-gallery-section {
+  margin-bottom: var.$spacer-4;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: var.$font-weight-semibold;
+    color: var.$text-primary;
+    margin: 0 0 var.$spacer-3 0;
+  }
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: var.$spacer-2;
+
+  @include mix.screen-breakpoint(md) {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: var.$spacer-3;
+  }
+}
+
+.image-container {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var.$border-radius;
+  box-shadow: var.$box-shadow-sm;
+  aspect-ratio: 4 / 3;
+  background-color: var.$surface-light; // Placeholder bg
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .image-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(var.$text-primary, 0.6);
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 0.8rem;
+    font-weight: var.$font-weight-semibold;
+    text-align: center;
+    padding: var.$spacer-1;
+    @include mix.flex-center;
+  }
+
+  &:hover {
+    img {
+      transform: scale(1.1);
+    }
+    .image-overlay {
+      opacity: 1;
+    }
+  }
+}
+
+.no-media-message {
+  font-style: italic;
+  color: var.$text-muted;
+  background-color: var.$surface-light;
+  padding: var.$spacer-3 var.$spacer-4;
+  border-radius: var.$border-radius;
+  border-left: 4px solid var.$border-color;
+  font-size: var.$font-size-sm;
+}
+
+.video-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var.$spacer-2;
+  padding: var.$spacer-2 var.$spacer-4;
+  background-color: var.$danger;
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: var.$border-radius;
+  font-weight: var.$font-weight-semibold;
+  transition: var.$transition-default;
+  cursor: pointer;
+  font-size: var.$font-size-base;
+
+  &:hover {
+    background-color: var.$danger;
+    opacity: 0.85;
+    box-shadow: var.$box-shadow-lg;
+    transform: translateY(-2px);
+  }
+}
+
+// Fullscreen states (Loading/Error)
+.loading-fullscreen,
+.full-width-error,
+.info-message {
+  @include mix.flex-center;
+  flex-direction: column;
+  min-height: 80vh;
+  padding: var.$spacer-5;
+  text-align: center;
+  font-size: 1.1rem;
+  color: var.$text-secondary;
+
+  .large-spinner {
+    font-size: 3rem;
+    margin-bottom: var.$spacer-4;
+  }
+
+  &.alert {
+    // Style for error state
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    padding: var.$spacer-4;
+  }
+}

@@ -1,3 +1,4 @@
+//component/StatCard.jsx
 import React from "react";
 
 const StatCard = ({

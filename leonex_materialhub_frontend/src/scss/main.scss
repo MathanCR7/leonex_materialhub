@@ -1,34 +1,32 @@
 // src/scss/main.scss
+@forward "utils/variables";
+@forward "utils/mixins";
 
-// 1. Utilities (Variables, Mixins, Functions first)
-@use "utils/variables" as var;
-@use "utils/mixins" as mix;
-// @use "utils/animations";
-
-// 2. Base & Global Styles
-@use "typography";
+@use "utils/animations";
 @use "base";
+@use "typography";
+@use "forms";
 @use "buttons";
 
-// 3. Layout specific
-@use "layout/container";
-@use "layout/forms";
+// Component Styles
+@use "../components/Sidebar";
+@use "../components/StatCard";
+@use "../components/ImageUploadField";
+@use "../components/CostEstimationForm";
+@use "../components/Pagination";
+@use "../components/ImageModal";
+@use "../components/VideoModal";
 
-// 4. Components (Import SCSS files from src/components/*)
-// Corrected relative paths: ../components/ instead of ../../components/
-@use "../components/_TopBar.scss";
-@use "../components/_ImageUploadField.scss";
-@use "../components/_StatCard.scss";
-// Add other common components' SCSS here, e.g.:
-// @use "../components/_MaterialSearchBar.scss";
-// @use "../components/_MaterialDetails.scss";
-
-// 5. Pages (Import SCSS files from src/pages/*)
-// Corrected relative paths: ../pages/ instead of ../../pages/
-@use "../pages/_LoginPage.scss";
-@use "../pages/_DashboardPage.scss";
-@use "../pages/_MaterialCodePage.scss";
-@use "../pages/_MaterialDataFormPage.scss";
-@use "../pages/_MaterialStatusPage.scss";
+// Page Styles
+@use "../pages/LoginPage";
+@use "../pages/DashboardPage";
+@use "../pages/MaterialCodePage";
+@use "../pages/MaterialStatusPage";
+@use "../pages/MaterialDataFormPage";
+@use "../pages/UserManagementPage";
+@use "../pages/MaterialInspectionPage";
 @use "../pages/ExportDataPage";
-// @use "../pages/_ExportDataPage.scss";
+@use "../pages/CostEstimateReportPage";
+
+// <<< FIX: Corrected the import path. This file is in the 'pages' directory.
+@use "../pages/MaterialManagementPage";
