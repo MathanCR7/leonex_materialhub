@@ -120,11 +120,8 @@ For initial testing and exploration of the Admin capabilities:
 ## 📚 Documentation
 
 - **For Developers:** Dive into the technical details, architecture, API endpoints, and setup guides in the [Developer Guide](DEVELOPER_GUIDE.md).
-- **For End-Users:** Learn how to use the application based on your role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDER.md).
+- **For End-Users:** Learn how to use the application based on your role (Admin, Cataloguer, Third Party) in the [User Guide](USER_GUIDE.md).
 
-## 🤝 Contributing
-
-Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) (if available) for guidelines on how to contribute to this project.
 
 ## 📄 License
 
