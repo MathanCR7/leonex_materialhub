@@ -1,6 +1,6 @@
 # Leonex Material Hub
 
-![Leonex Material Hub Banner Placeholder](https://via.placeholder.com/1200x300?text=Leonex+Material+Hub)
+
 
 Welcome to the Leonex Material Hub repository! This project is a web-based platform designed to streamline the material cataloguing, defect tracking, and third-party cost estimation process within a multi-plant organization. It centers around precise material code identification and role-based access control to manage inventory conditions and facilitate potential recovery or disposition decisions.
 
