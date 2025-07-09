@@ -188,17 +188,6 @@ These credentials are strictly for **development and testing purposes** within a
 
 ---
 
-## 📸 Screenshots
-
-*(Suggestion: Add screenshots or GIFs here to showcase the application's UI for different roles.)*
-
-For example:
-
--   ![Admin Dashboard Screenshot](docs/screenshots/admin-dashboard.png)
--   ![Cataloguer Submission Form Screenshot](docs/screenshots/cataloguer-form.png)
--   ![Third Party Estimation Screenshot](docs/screenshots/third-party-estimation.png)
-
-*(Replace the above lines with actual image links once you have screenshots.)*
 
 ## 📚 Documentation
 
