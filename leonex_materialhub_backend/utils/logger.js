@@ -1,6 +1,7 @@
-// utils/logger.js
+// leonex_materialhub_backend/utils/logger.js
 const winston = require("winston");
 const path = require("path");
+const fs = require("fs"); // Import the file system module
 
 const NODE_ENV = process.env.NODE_ENV || "development";
 
@@ -26,56 +27,64 @@ const colors = {
 };
 winston.addColors(colors);
 
-// Define log format
-const format = winston.format.combine(
+// Define log format for development
+const devFormat = winston.format.combine(
   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-  // Add a unique request ID to each log if it exists
-  winston.format((info) => {
-    if (info.requestId) {
-      info.message = `[${info.requestId}] ${info.message}`;
-    }
-    return info;
-  })(),
-  // Colorize the output for the console
   winston.format.colorize({ all: true }),
-  // Define the structure of the log message
   winston.format.printf(
     (info) => `${info.timestamp} ${info.level}: ${info.message}`
   )
 );
 
-// For production, use a more structured JSON format
-const productionFormat = winston.format.combine(
+// Define log format for production (structured JSON)
+const prodFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.json()
 );
 
-// Define transports (where logs are sent)
+// =================================================================
+// CRITICAL FIX: Build the transports array conditionally.
+// =================================================================
+// Start with the Console transport, which is always needed.
 const transports = [
-  // Log to the console with a specific format and level
   new winston.transports.Console({
     level: NODE_ENV === "development" ? "debug" : "http",
-    format: NODE_ENV === "development" ? format : productionFormat,
-  }),
-  // File transport for all logs
-  new winston.transports.File({
-    filename: path.join(logDir, "combined.log"),
-    level: "info",
-    format: productionFormat,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
-  }),
-  // File transport for only error logs
-  new winston.transports.File({
-    filename: path.join(logDir, "error.log"),
-    level: "error",
-    format: productionFormat,
-    maxsize: 5242880, // 5MB
-    maxFiles: 5,
+    format: NODE_ENV === "development" ? devFormat : prodFormat,
   }),
 ];
 
-// Create the logger instance
+// Only add File transports if we are NOT in production (i.e., on your local machine).
+if (NODE_ENV !== "production") {
+  // Create the log directory if it doesn't exist
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
+
+  // Add the file transport for all logs
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(logDir, "combined.log"),
+      level: "info",
+      format: prodFormat,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  );
+
+  // Add the file transport for only error logs
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(logDir, "error.log"),
+      level: "error",
+      format: prodFormat,
+      maxsize: 5242880, // 5MB
+      maxFiles: 5,
+    })
+  );
+}
+// =================================================================
+
+// Create the logger instance with the configured transports
 const logger = winston.createLogger({
   level: NODE_ENV === "development" ? "debug" : "info",
   levels,
@@ -85,7 +94,6 @@ const logger = winston.createLogger({
 // Create a stream object with a 'write' function that will be used by morgan
 logger.stream = {
   write: (message) => {
-    // Use the 'http' level so we can filter based on that
     logger.http(message.trim());
   },
 };
