@@ -1,5 +1,10 @@
 {
+  "version": 2,
   "builds": [
+    {
+      "src": "leonex_materialhub_backend/server.js",
+      "use": "@vercel/node"
+    },
     {
       "src": "leonex_materialhub_frontend/package.json",
       "use": "@vercel/static-build",
@@ -10,8 +15,12 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "leonex_materialhub_backend/server.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/leonex_materialhub_frontend/$1"
+      "dest": "leonex_materialhub_frontend/dist/$1"
     }
   ]
 }
