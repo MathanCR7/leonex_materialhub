@@ -1,186 +1,207 @@
-// src/components/CostEstimationForm.jsx
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
-import {
-  submitCostEstimation,
-  // <<< CHANGE: Import the new, more specific function
-  getMyEstimationForSubmission,
-} from "../services/api";
-import { toast } from "react-toastify";
-import { FaSpinner, FaSave } from "react-icons/fa";
 import "./_CostEstimationForm.scss";
 
-const CostEstimationForm = ({ submissionId }) => {
-  const [formData, setFormData] = useState({
-    good_material_price: "",
-    package_defects_price: "",
-    physical_defects_price: "",
-    other_defects_price: "",
+const CostEstimationForm = ({ counts, formData, setFormData }) => {
+  const [totals, setTotals] = useState({
+    good_material: 0,
+    package_defects: 0,
+    physical_defects: 0,
+    other_defects: 0,
+    grand_total: 0,
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
 
-  // <<< CHANGE: Updated useEffect to be more efficient and clear >>>
+  // --- MODIFIED useEffect ---
+  // This hook now also automatically sets the price to "0" for any category with 0 units.
   useEffect(() => {
-    const fetchExistingEstimation = async () => {
-      if (!submissionId || !user) return;
-      setIsLoading(true);
-      try {
-        // Use the new, specific API endpoint
-        const response = await getMyEstimationForSubmission(submissionId);
-        // The response.data is now the single estimation object
-        if (response.data) {
-          setFormData({
-            good_material_price: response.data.good_material_price || "",
-            package_defects_price: response.data.package_defects_price || "",
-            physical_defects_price: response.data.physical_defects_price || "",
-            other_defects_price: response.data.other_defects_price || "",
-          });
-        }
-      } catch (error) {
-        // A 404 error is expected if no estimation has been submitted yet.
-        // We only show an error toast for other, unexpected errors.
-        if (error.response?.status !== 404) {
-          toast.error("Failed to fetch your existing estimation data.");
-          console.error("Failed to fetch existing estimation", error);
-        }
-        // If it's a 404, we do nothing, leaving the form blank for a new entry.
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!counts || !formData) {
+      return;
+    }
 
-    fetchExistingEstimation();
-  }, [submissionId, user]);
+    // Auto-update form data for zero-count items
+    const updatedFormData = { ...formData };
+    let didUpdate = false;
+
+    if (counts.good_material === 0 && formData.good_material_price !== "0") {
+      updatedFormData.good_material_price = "0";
+      didUpdate = true;
+    }
+    if (counts.package_defects === 0 && formData.package_defects_price !== "0") {
+      updatedFormData.package_defects_price = "0";
+      didUpdate = true;
+    }
+    if (counts.physical_defects === 0 && formData.physical_defects_price !== "0") {
+      updatedFormData.physical_defects_price = "0";
+      didUpdate = true;
+    }
+    if (counts.other_defects === 0 && formData.other_defects_price !== "0") {
+      updatedFormData.other_defects_price = "0";
+      didUpdate = true;
+    }
+
+    if (didUpdate) {
+      setFormData(updatedFormData);
+    }
+
+    // Calculation logic remains the same but will use the new "0" values.
+    const calculateTotals = () => {
+      const getNum = (val) => {
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? 0 : parsed;
+      };
+
+      const dataToCalculate = didUpdate ? updatedFormData : formData;
+
+      const good = getNum(counts.good_material) * getNum(dataToCalculate.good_material_price);
+      const package_def = getNum(counts.package_defects) * getNum(dataToCalculate.package_defects_price);
+      const physical_def = getNum(counts.physical_defects) * getNum(dataToCalculate.physical_defects_price);
+      const other_def = getNum(counts.other_defects) * getNum(dataToCalculate.other_defects_price);
+      
+      const grand_total = good + package_def + physical_def + other_def;
+
+      setTotals({
+        good_material: good,
+        package_defects: package_def,
+        physical_defects: physical_def,
+        other_defects: other_def,
+        grand_total,
+      });
+    };
+    
+    calculateTotals();
+  }, [formData, counts, setFormData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      // This single function works for both creating and updating thanks to the backend logic.
-      await submitCostEstimation(submissionId, formData);
-      toast.success("Cost estimation saved successfully!");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to submit estimation."
-      );
-      console.error("Estimation submission error:", error);
-    } finally {
-      setIsSubmitting(false);
-    }
+  const formatNumber = (num) => {
+    const numericValue = parseFloat(num);
+    if (isNaN(numericValue)) return '0.00';
+    return numericValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  
+  if (!counts) {
+    return <div className="loading-text">Loading counts...</div>;
+  }
+  
+  const getDisplayPrice = (price) => {
+      const parsed = parseFloat(price);
+      return isNaN(parsed) ? '0.00' : formatNumber(parsed);
   };
 
-  if (isLoading) {
-    return (
-      <div className="cost-estimation-form card-style">
-        <h4>Your Cost Estimation</h4>
-        <div className="loading-text">
-          <FaSpinner className="spinner-icon" /> Loading...
+  return (
+    <div className="cost-estimation-form">
+      <div className="estimation-grid">
+        {/* Good Material */}
+        <div className="form-group">
+          <label htmlFor="good_material_price">Good Material Price ({counts.good_material || 0} units)</label>
+          <div className="input-with-calc">
+            <input
+              type="number"
+              id="good_material_price"
+              name="good_material_price"
+              value={formData.good_material_price}
+              onChange={handleInputChange}
+              placeholder="Price per unit"
+              className="form-control"
+              required={true}
+              min="0"
+              step="0.01"
+              // --- NEW: Disable input if count is 0 ---
+              disabled={counts.good_material === 0}
+            />
+            {/* Condition reverted to > 0 as it's not needed for 0-count items */}
+            {counts.good_material > 0 && formData.good_material_price && (
+              <div className="dynamic-calculation">
+                {counts.good_material} &times; {getDisplayPrice(formData.good_material_price)} = <strong>{formatNumber(totals.good_material)}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Package Defects */}
+        <div className="form-group">
+          <label htmlFor="package_defects_price">Package Defect Price ({counts.package_defects || 0} units)</label>
+          <div className="input-with-calc">
+            <input
+              type="number"
+              id="package_defects_price"
+              name="package_defects_price"
+              value={formData.package_defects_price}
+              onChange={handleInputChange}
+              placeholder="Price per unit"
+              className="form-control"
+              required={true}
+              min="0"
+              step="0.01"
+              disabled={counts.package_defects === 0}
+            />
+            {counts.package_defects > 0 && formData.package_defects_price && (
+              <div className="dynamic-calculation">
+                {counts.package_defects} &times; {getDisplayPrice(formData.package_defects_price)} = <strong>{formatNumber(totals.package_defects)}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Physical Defects */}
+        <div className="form-group">
+          <label htmlFor="physical_defects_price">Physical Defect Price ({counts.physical_defects || 0} units)</label>
+           <div className="input-with-calc">
+            <input
+              type="number"
+              id="physical_defects_price"
+              name="physical_defects_price"
+              value={formData.physical_defects_price}
+              onChange={handleInputChange}
+              placeholder="Price per unit"
+              className="form-control"
+              required={true}
+              min="0"
+              step="0.01"
+              disabled={counts.physical_defects === 0}
+            />
+            {counts.physical_defects > 0 && formData.physical_defects_price && (
+              <div className="dynamic-calculation">
+                {counts.physical_defects} &times; {getDisplayPrice(formData.physical_defects_price)} = <strong>{formatNumber(totals.physical_defects)}</strong>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Other Defects */}
+        <div className="form-group">
+          <label htmlFor="other_defects_price">Other Defect Price ({counts.other_defects || 0} units)</label>
+          <div className="input-with-calc">
+            <input
+              type="number"
+              id="other_defects_price"
+              name="other_defects_price"
+              value={formData.other_defects_price}
+              onChange={handleInputChange}
+              placeholder="Price per unit"
+              className="form-control"
+              required={true}
+              min="0"
+              step="0.01"
+              disabled={counts.other_defects === 0}
+            />
+            {counts.other_defects > 0 && formData.other_defects_price && (
+              <div className="dynamic-calculation">
+                {counts.other_defects} &times; {getDisplayPrice(formData.other_defects_price)} = <strong>{formatNumber(totals.other_defects)}</strong>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    );
-  }
-
-  // The rest of the component's JSX remains exactly the same.
-  return (
-    <div className="cost-estimation-form card-style">
-      <h4>Your Cost Estimation</h4>
-      <p className="form-subtitle">
-        Please provide the price per unit for each category.
-      </p>
-      <form onSubmit={handleSubmit}>
-        <fieldset disabled={isSubmitting}>
-          <div className="estimation-grid single-price">
-            <div className="form-group">
-              <label htmlFor="good_material_price">Good Material Price</label>
-              <input
-                type="number"
-                id="good_material_price"
-                name="good_material_price"
-                value={formData.good_material_price}
-                onChange={handleInputChange}
-                placeholder="Price per unit"
-                className="form-control"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-            {/* ... other input fields ... */}
-            <div className="form-group">
-              <label htmlFor="package_defects_price">
-                Package Defect Material Price
-              </label>
-              <input
-                type="number"
-                id="package_defects_price"
-                name="package_defects_price"
-                value={formData.package_defects_price}
-                onChange={handleInputChange}
-                placeholder="Price per unit"
-                className="form-control"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="physical_defects_price">
-                Physical Defect Material Price
-              </label>
-              <input
-                type="number"
-                id="physical_defects_price"
-                name="physical_defects_price"
-                value={formData.physical_defects_price}
-                onChange={handleInputChange}
-                placeholder="Price per unit"
-                className="form-control"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="other_defects_price">Other Defect Price</label>
-              <input
-                type="number"
-                id="other_defects_price"
-                name="other_defects_price"
-                value={formData.other_defects_price}
-                onChange={handleInputChange}
-                placeholder="Price per unit"
-                className="form-control"
-                required
-                min="0"
-                step="0.01"
-              />
-            </div>
-          </div>
-          <div className="form-actions-bottom">
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <FaSpinner className="spinner-icon-btn" />
-              ) : (
-                <FaSave />
-              )}
-              {isSubmitting ? "Saving..." : "Save/Update Estimation"}
-            </button>
-          </div>
-        </fieldset>
-      </form>
+      
+      <div className="grand-total-section">
+        <h4>Total Estimated Value</h4>
+        <p className="total-amount">
+          {formatNumber(totals.grand_total)}
+        </p>
+      </div>
     </div>
   );
 };

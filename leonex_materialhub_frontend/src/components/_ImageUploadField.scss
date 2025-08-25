@@ -7,41 +7,76 @@
 
 .image-upload-field {
   background-color: var.$surface-light;
-  padding: var.$spacer-2;
-  border-radius: var.$border-radius;
+  padding: var.$spacer-3; // Optimized padding for all screen sizes
+  border-radius: var.$border-radius-lg;
   border: 1px solid var.$border-color-light;
   display: flex;
   flex-direction: column;
   height: 100%;
+  gap: var.$spacer-2;
 
   > label {
-    font-weight: var.$font-weight-medium;
+    font-weight: var.$font-weight-semibold;
     color: var.$text-primary;
     display: block;
-    margin-bottom: var.$spacer-2;
-    font-size: var.$font-size-sm;
+    margin-bottom: 0; // Let gap handle spacing
+    font-size: var.$font-size-base;
   }
 
   .upload-controls-wrapper {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    min-height: 180px;
   }
 
   .upload-area {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: var.$spacer-2;
-    padding: var.$spacer-2;
+    gap: var.$spacer-3;
+    padding: var.$spacer-3;
     border: 2px dashed var.$border-color;
     border-radius: var.$border-radius;
     background-color: var.$surface-color;
-    transition: var.$transition-default;
-    min-height: 80px;
+    transition: all 0.2s ease-in-out;
     height: 100%;
     flex-grow: 1;
+    text-align: center;
+    color: var.$text-secondary;
+    cursor: pointer;
+
+    .upload-instructions p {
+      margin: 0;
+      font-size: var.$font-size-base;
+      font-weight: var.$font-weight-medium;
+    }
+
+    .upload-buttons {
+      display: flex;
+      width: 100%;
+      gap: var.$spacer-2;
+      // MOBILE-FIRST: Buttons stack vertically for easy tapping
+      flex-direction: column;
+      align-items: center;
+
+      // DESKTOP: Switch to a row layout on screens larger than 'sm'
+      @include mix.screen-breakpoint(sm) {
+        flex-direction: row;
+        justify-content: center;
+        width: auto;
+      }
+    }
+
+    // --- NEW: Enhanced Drag and Drop & Hover states ---
+    &.is-dragging {
+      border-color: var.$primary;
+      background-color: var.$primary-light;
+      border-style: solid;
+      transform: scale(1.02);
+      box-shadow: var.$box-shadow-focus;
+    }
 
     &:hover:not(.disabled) {
       border-color: var.$primary;
@@ -51,24 +86,35 @@
     .btn-upload {
       background-color: var.$surface-color;
       color: var.$text-secondary;
-      border-color: var.$border-color;
-      font-size: var.$font-size-xs;
-      width: auto;
-      flex-grow: 1;
-      padding: var.$spacer-2 var.$spacer-1;
+      border: 1px solid var.$border-color;
+      font-size: var.$font-size-sm;
+      font-weight: var.$font-weight-medium;
+      padding: var.$spacer-2 var.$spacer-3;
+      // MOBILE-FIRST: Full width for better touch targets
+      width: 100%;
+      max-width: 200px; // Prevent buttons from being excessively wide
+      @include mix.flex-center;
+      gap: var.$spacer-2;
       @include btn.btn-base;
 
       &:hover:not(:disabled) {
         background-color: var.$surface-light;
-        border-color: var.$secondary;
-        color: var.$text-primary;
+        border-color: var.$primary;
+        color: var.$primary;
+        transform: translateY(-2px);
+        box-shadow: var.$box-shadow-sm;
+      }
+
+      // DESKTOP: Revert to auto width
+      @include mix.screen-breakpoint(sm) {
+        width: auto;
       }
     }
 
     .no-file-placeholder {
       color: var.$text-muted;
       font-style: italic;
-      font-size: var.$font-size-sm;
+      font-size: var.$font-size-base;
     }
   }
 
@@ -78,7 +124,8 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: var.$spacer-2;
 
     .preview-media {
       border-radius: var.$border-radius;
@@ -86,47 +133,116 @@
       background-color: var.$bg-color;
       border: 1px solid var.$border-color;
       @include mix.flex-center;
-      height: 100%;
-      min-height: 120px;
-      max-height: 150px;
+      flex-grow: 1;
+      min-height: 150px;
+      // MOBILE-FIRST: Responsive max-height
+      max-height: 180px;
+
+      // DESKTOP: Taller preview on larger screens
+      @include mix.screen-breakpoint(md) {
+        max-height: 220px;
+      }
 
       img,
       video {
         width: 100%;
         height: 100%;
         object-fit: contain;
+        transition: transform 0.3s ease-in-out;
       }
     }
 
-    .btn-remove-file {
+    .preview-details {
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-2;
+      background-color: var.$surface-color;
+      padding: var.$spacer-2;
+      border-radius: var.$border-radius;
+      border: 1px solid var.$border-color;
+
+      .file-icon {
+        font-size: 1.75rem;
+        color: var.$text-muted;
+        flex-shrink: 0;
+      }
+
+      .file-text {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        font-size: var.$font-size-sm;
+
+        .file-name {
+          font-weight: var.$font-weight-medium;
+          color: var.$text-primary;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .file-size {
+          color: var.$text-secondary;
+        }
+      }
+    }
+
+    .preview-actions {
       position: absolute;
-      top: var.$spacer-1;
-      right: var.$spacer-1;
-      background-color: rgba(0, 0, 0, 0.6);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      line-height: 1;
-      padding: 0;
-      transition: var.$transition-default;
-      cursor: pointer;
-      @include mix.flex-center;
+      top: var.$spacer-2;
+      right: var.$spacer-2;
+      display: flex;
+      gap: var.$spacer-1;
+      z-index: 10;
 
-      &:hover {
-        background-color: var.$danger;
-        transform: scale(1.1);
+      .btn-action {
+        background-color: rgba(20, 20, 20, 0.7);
+        // --- FIX: Added vendor prefix for Safari compatibility ---
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        // Larger touch targets
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        transition: var.$transition-default;
+        cursor: pointer;
+        @include mix.flex-center;
+
+        &:hover {
+          background-color: var.$primary;
+          transform: scale(1.1);
+        }
+
+        &.btn-remove-file:hover {
+          background-color: var.$danger;
+        }
       }
     }
+  }
+
+  .error-message {
+    background-color: color.adjust(var.$danger, $alpha: -0.9);
+    color: var.$danger;
+    border: 1px solid color.adjust(var.$danger, $alpha: -0.5);
+    padding: var.$spacer-2 var.$spacer-3;
+    border-radius: var.$border-radius;
+    font-size: var.$font-size-sm;
+    font-weight: var.$font-weight-medium;
+    @include mix.flex-center(flex-start);
+    gap: var.$spacer-2;
   }
 
   &.disabled {
     .upload-area {
       cursor: not-allowed;
       background-color: var.$surface-color;
+      border-color: var.$border-color-light;
+      color: var.$text-muted;
       &:hover {
-        border-color: var.$border-color;
+        border-color: var.$border-color-light; // Override hover effect
       }
     }
   }

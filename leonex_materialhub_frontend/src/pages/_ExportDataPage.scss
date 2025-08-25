@@ -7,37 +7,99 @@
   flex-direction: column;
   gap: var.$spacer-5;
   animation: fadeIn 0.4s ease-out;
+  padding: var.$spacer-4; // Add padding for better spacing on mobile edges
+
+  @include mix.screen-breakpoint(md) {
+    padding: var.$spacer-5;
+  }
 
   .export-controls,
   .bulk-export-section,
   .single-export-section {
-    // <<< FIX: position moved before the @include to prevent warnings.
     position: relative;
-    @include mix.card-style;
+    @include mix.card-style(var.$spacer-4); // Use consistent base padding
 
     h2 {
       font-size: 1.25rem;
-      margin-bottom: var.$spacer-4;
+      margin: 0 0 var.$spacer-4;
       padding-bottom: var.$spacer-3;
       border-bottom: 1px solid var.$border-color-light;
+    }
+  }
+
+  // Modern, tappable radio button group
+  .radio-group-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var.$spacer-3;
+
+    @include mix.screen-breakpoint(sm) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: var.$spacer-3;
+      padding: var.$spacer-3;
+      background-color: var.$surface-light;
+      border: 1px solid var.$border-color-light;
+      border-radius: var.$border-radius;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-weight: var.$font-weight-medium;
+
+      &:hover {
+        border-color: var.$primary;
+        background-color: var.$primary-light;
+      }
+
+      input[type="radio"] {
+        appearance: none;
+        width: 1.3em;
+        height: 1.3em;
+        border: 2px solid var.$border-color;
+        border-radius: 50%;
+        margin: 0;
+        transition: all 0.2s ease-in-out;
+        position: relative;
+        flex-shrink: 0; // Prevent shrinking
+
+        &:checked {
+          border-color: var.$primary;
+          background-color: var.$primary;
+
+          &::after {
+            content: "";
+            display: block;
+            width: 0.6em;
+            height: 0.6em;
+            border-radius: 50%;
+            background-color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+      }
     }
   }
 
   .filter-controls {
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: var.$spacer-3;
     margin-bottom: var.$spacer-5;
+    
     @include mix.screen-breakpoint(md) {
       flex-direction: row;
       align-items: center;
     }
-    .form-control {
-      min-width: 220px;
-    }
+    
     .date-range-picker {
       position: relative;
+      width: 100%;
       .react-datepicker-wrapper {
         width: 100%;
       }
@@ -69,13 +131,16 @@
 
   .bulk-actions,
   .export-actions {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
     gap: var.$spacer-3;
     margin-top: var.$spacer-4;
+    
     @include mix.screen-breakpoint(sm) {
-      flex-direction: row;
-      flex-wrap: wrap;
+      grid-template-columns: 1fr 1fr;
+    }
+    .btn {
+      width: 100%; // Ensure buttons are full width
     }
   }
 
@@ -85,40 +150,126 @@
     margin: var.$spacer-4 0;
   }
 
+  // --- RESPONSIVE TABLE ---
+  // Transforms table into a list of cards on mobile devices.
   .submissions-preview-table {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-
     table {
       width: 100%;
-      min-width: 700px;
       border-collapse: collapse;
     }
 
-    th,
-    td {
-      padding: var.$spacer-3 var.$spacer-4;
-      text-align: left;
-      border-bottom: 1px solid var.$border-color-light;
-      white-space: nowrap;
+    // Mobile First: Hide headers, style rows as cards
+    thead {
+      position: absolute;
+      left: -10000px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
     }
-    th {
-      font-weight: var.$font-weight-semibold;
-      color: var.$text-secondary;
+
+    tr {
+      display: block;
+      padding: var.$spacer-4;
+      border-radius: var.$border-radius;
+      background: var.$surface-light;
+      border: 1px solid var.$border-color-light;
+      margin-bottom: var.$spacer-4;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var.$spacer-2 0;
+      text-align: right;
+      border-bottom: 1px dashed var.$border-color;
+      word-break: break-all;
+
+      // Use pseudo-elements to add data labels
+      &::before {
+        content: attr(data-label);
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+        text-align: left;
+        padding-right: var.$spacer-4;
+      }
+
+      // Assign labels from headers
+      &:nth-of-type(1)::before { content: "Material Code"; }
+      &:nth-of-type(2)::before { content: "Plant"; }
+      &:nth-of-type(3)::before { content: "Category"; }
+      &:nth-of-type(4)::before { content: "Submitted At"; }
+      
+      // Special styling for the actions cell
+      &:last-of-type {
+        border: none;
+        padding-top: var.$spacer-3;
+        padding-bottom: 0;
+        justify-content: flex-end;
+        gap: var.$spacer-2;
+        &::before {
+          display: none; // No label for the actions
+        }
+      }
+    }
+
+    // Desktop View: Restore the traditional table layout
+    @include mix.screen-breakpoint(md) {
+      overflow-x: auto;
+
+      table { min-width: 700px; }
+      
+      thead {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+      }
+      
+      tr {
+        display: table-row;
+        padding: 0;
+        border: none;
+        background: transparent;
+        margin-bottom: 0;
+        border-bottom: 1px solid var.$border-color-light;
+      }
+
+      th, td {
+        display: table-cell;
+        padding: var.$spacer-3 var.$spacer-4;
+        text-align: left;
+        white-space: nowrap;
+        border: none;
+
+        &::before { display: none; }
+      }
+
+      th {
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+      }
+      
+      td:last-of-type {
+        justify-content: start; // Reset mobile alignment
+      }
     }
   }
 
+  // Single export form styling for mobile
   .single-export-form {
     display: grid;
-    gap: var.$spacer-3;
-    align-items: flex-end;
+    gap: var.$spacer-4;
+    
+    .btn { width: 100%; }
 
     @include mix.screen-breakpoint(md) {
       grid-template-columns: 1fr 1fr auto;
+      align-items: flex-end;
       gap: var.$spacer-4;
-      .form-group {
-        margin-bottom: 0;
-      }
+      .btn { width: auto; }
+      .form-group { margin-bottom: 0; }
     }
   }
 
@@ -128,8 +279,10 @@
     border: 1px dashed var.$border-color;
     background-color: var.$surface-light;
     border-radius: var.$border-radius;
+    animation: fadeIn 0.3s ease-in;
     p {
       margin-bottom: var.$spacer-2;
+      word-break: break-word;
     }
   }
 
@@ -137,6 +290,9 @@
     text-align: center;
     color: var.$text-secondary;
     padding: var.$spacer-5;
+    background-color: var.$surface-light;
+    border-radius: var.$border-radius;
+
     @include mix.screen-breakpoint(md) {
       padding: var.$spacer-6;
     }

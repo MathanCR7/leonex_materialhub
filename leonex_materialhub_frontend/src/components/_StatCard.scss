@@ -1,91 +1,105 @@
-// src/components/_StatCard.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 
 .stat-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var.$spacer-4;
-  position: relative;
+  padding: var.$spacer-5;
+  border-radius: var.$border-radius-lg;
+  border: 1px solid transparent;
   overflow: hidden;
-  border: none;
-  color: white; // Title text will inherit this (unless overridden by a variant)
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  @include mix.card-style($padding: var.$spacer-4, $radius: var.$border-radius);
+  color: white;
+  transition: all 0.3s ease;
 
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var.$box-shadow-lg;
+  &.is-clickable {
+    cursor: pointer;
   }
 
   &::before {
     content: "";
     position: absolute;
-    top: -50%;
-    right: -25%;
-    width: 80%;
-    height: 150%;
-    background: rgba(255, 255, 255, 0.08);
-    transform: rotate(25deg);
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    opacity: 0.5;
+    transform: scale(0);
+    transition: transform 0.4s ease-out;
+  }
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var.$box-shadow-lg;
+    border-color: rgba(255, 255, 255, 0.3);
+    &::before {
+      transform: scale(2.5);
+    }
   }
 
   .stat-card-icon {
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.2);
-    font-size: 1.4rem;
     @include mix.flex-center;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-size: 1.6rem;
+    z-index: 1;
   }
 
   .stat-card-content {
+    z-index: 1;
     .stat-card-title {
       font-size: var.$font-size-sm;
       font-weight: var.$font-weight-medium;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       margin: 0 0 var.$spacer-1 0;
       opacity: 0.9;
     }
     .stat-card-value {
-      font-size: 1.6rem;
+      font-size: 2rem;
       font-weight: var.$font-weight-bold;
       margin: 0;
       line-height: 1.1;
+      color: white; // Corrected: Value is always white for contrast
+    }
+  }
+  
+  // --- NEW: Compact variant for Admin/Cataloguer Dashboard ---
+  &.compact {
+    padding: var.$spacer-4;
+    gap: var.$spacer-3;
 
-      // --- THIS IS THE FIX ---
-      // This sets the value text color to the theme's primary (black) color.
-      color: var.$text-primary;
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+    }
 
-      @include mix.screen-breakpoint(lg) {
+    .stat-card-content {
+      .stat-card-title {
+        font-size: 0.75rem; // Slightly smaller for compact view
+        margin: 0;
+      }
+      .stat-card-value {
         font-size: 1.8rem;
+        line-height: 1.2;
       }
     }
   }
 
-  // Color variants
-  &.bg-blue {
-    background: linear-gradient(45deg, #007bff, #0056b3);
-  }
-  &.bg-green {
-    background: linear-gradient(45deg, #28a745, #1e7e34);
-  }
-  &.bg-yellow {
-    background: linear-gradient(45deg, #ffc107, #d39e00);
-    // On the yellow card, this sets the *title* text color to black for readability.
-    // The .stat-card-value is already black from the rule above.
-    color: var.$text-primary;
-  }
-  &.bg-teal {
-    background: linear-gradient(45deg, #17a2b8, #117a8b);
-  }
-  &.bg-purple {
-    background: linear-gradient(45deg, #6f42c1, #563d7c);
-  }
-  &.bg-orange {
-    background: linear-gradient(45deg, #fd7e14, #e36402);
-  }
+  // --- VIBRANT COLOR VARIANTS ---
+  &.bg-blue { background: linear-gradient(135deg, #007bff, #0056b3); }
+  &.bg-green { background: linear-gradient(135deg, #28a745, #1e7e34); }
+  &.bg-yellow { background: linear-gradient(135deg, #ffc107, #d39e00); color: var.$text-primary; }
+  &.bg-teal { background: linear-gradient(135deg, #17a2b8, #117a8b); }
+  &.bg-purple { background: linear-gradient(135deg, #6f42c1, #563d7c); }
+  &.bg-orange { background: linear-gradient(135deg, #fd7e14, #e36402); }
+  &.bg-red { background: linear-gradient(135deg, #dc3545, #b02a37); }
+  &.bg-gray { background: linear-gradient(135deg, #6c757d, #495057); }
 }

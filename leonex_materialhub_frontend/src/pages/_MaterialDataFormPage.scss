@@ -1,5 +1,3 @@
-// src/pages/_MaterialDataFormPage.scss
-
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 @use "sass:color";
@@ -7,21 +5,49 @@
 .material-data-form-page {
   animation: fadeIn 0.4s ease-out;
 
+  // Reduce overall font size slightly on small screens for better fit
+  font-size: var.$font-size-base;
+  @include mix.screen-breakpoint(md) {
+    font-size: inherit; // Revert to default on larger screens
+  }
+
+  // --- Page Header ---
   .page-header {
     margin-bottom: var.$spacer-4;
-    padding: var.$spacer-4;
+    padding: var.$spacer-3;
     background-color: var.$surface-light;
     border-radius: var.$border-radius-lg;
     border: 1px solid var.$border-color-light;
 
+    @include mix.screen-breakpoint(md) {
+      padding: var.$spacer-4;
+    }
+
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.25rem; // Reduced for mobile
       color: var.$text-primary;
       margin-bottom: var.$spacer-3;
-      .material-code-highlight {
-        color: var.$primary;
-        font-weight: var.$font-weight-semibold;
+      line-height: 1.3;
+      word-break: break-word; // Ensure long titles wrap
+
+      @include mix.screen-breakpoint(md) {
+        font-size: 1.5rem;
       }
+
+      .material-code-highlight,
+      .mask-code-header-display {
+        display: block; // Stack them vertically on mobile
+        margin-top: var.$spacer-1;
+      }
+
+      @include mix.screen-breakpoint(sm) {
+        .material-code-highlight,
+        .mask-code-header-display {
+          display: inline; // Inline on larger screens
+          margin-top: 0;
+        }
+      }
+
       .mask-code-header-display {
         font-size: var.$font-size-sm;
         color: var.$text-muted;
@@ -31,7 +57,7 @@
 
     .material-description-display {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: var.$spacer-2;
       padding: var.$spacer-2;
       background-color: var.$surface-color;
@@ -39,6 +65,7 @@
       font-size: var.$font-size-sm;
       color: var.$text-secondary;
       border: 1px solid var.$border-color-light;
+      word-break: break-word; // Prevent overflow from long unbroken strings
 
       &:not(:last-child) {
         margin-bottom: var.$spacer-2;
@@ -47,13 +74,45 @@
       svg {
         color: var.$primary;
         flex-shrink: 0;
+        margin-top: 2px;
       }
     }
   }
 
+  // --- Alert boxes for workflow status ---
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var.$spacer-2;
+    padding: var.$spacer-3;
+    margin-bottom: var.$spacer-4;
+    border-radius: var.$border-radius;
+    border-left-width: 4px;
+    border-left-style: solid;
+    font-size: var.$font-size-sm;
+
+    svg {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    &.alert-warning {
+      background-color: color.adjust(var.$warning, $alpha: -0.9);
+      border-color: var.$warning;
+      color: color.adjust(var.$warning, $lightness: -25%);
+    }
+
+    &.alert-danger {
+      background-color: color.adjust(var.$danger, $alpha: -0.9);
+      border-color: var.$danger;
+      color: color.adjust(var.$danger, $lightness: -20%);
+    }
+  }
+
+  // --- Main Form Styles ---
   .material-form {
     fieldset[disabled] {
-      opacity: 0.8;
+      opacity: 0.7;
       pointer-events: none;
     }
 
@@ -63,6 +122,7 @@
       border-radius: var.$border-radius-lg;
       border: 1px solid var.$border-color-light;
       box-shadow: var.$box-shadow-sm;
+      transition: var.$transition-default;
 
       @include mix.screen-breakpoint(md) {
         padding: var.$spacer-4;
@@ -77,18 +137,37 @@
       border-bottom: 1px solid var.$border-color-light;
     }
     .form-section-title {
-      font-size: 1.2rem;
+      font-size: 1.05rem; // Reduced for mobile
       color: var.$text-primary;
       font-weight: var.$font-weight-medium;
-      margin-bottom: var.$spacer-4;
+      margin-bottom: var.$spacer-3;
+
+      @include mix.screen-breakpoint(md) {
+        font-size: 1.2rem;
+        margin-bottom: var.$spacer-4;
+      }
     }
   }
 
+  .form-group label {
+    font-size: var.$font-size-sm; // Smaller labels on mobile
+    margin-bottom: var.$spacer-1;
+
+    @include mix.screen-breakpoint(md) {
+      font-size: var.$font-size-base;
+      margin-bottom: var.$spacer-2;
+    }
+  }
+
+  // --- Responsive Form Grid ---
   .form-grid {
     display: grid;
     gap: var.$spacer-3;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
 
+    @include mix.screen-breakpoint(sm) {
+      grid-template-columns: repeat(2, 1fr);
+    }
     @include mix.screen-breakpoint(md) {
       grid-template-columns: repeat(3, 1fr);
     }
@@ -100,16 +179,19 @@
     }
   }
 
+  // --- Responsive Media Grid ---
   .media-grid {
     display: grid;
-    gap: var.$spacer-3;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var.$spacer-2;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); // Smaller min for mobile
 
-    @include mix.screen-breakpoint(lg) {
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    @include mix.screen-breakpoint(md) {
+      gap: var.$spacer-3;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
   }
 
+  // --- Defects Section ---
   .defects-grid-container {
     display: grid;
     gap: var.$spacer-3;
@@ -137,6 +219,31 @@
       color: var.$text-primary;
       margin-bottom: var.$spacer-3;
       font-weight: var.$font-weight-medium;
+
+      .highlighted-count {
+        color: var.$primary;
+        font-weight: var.$font-weight-bold;
+        background-color: color.adjust(var.$primary, $alpha: -0.9);
+        padding: 2px 8px;
+        border-radius: var.$border-radius-sm;
+        margin-left: 4px;
+      }
+    }
+
+    .defect-image-controls {
+      display: flex;
+      flex-direction: column;
+      gap: var.$spacer-2;
+      margin-bottom: var.$spacer-3;
+
+      @include mix.screen-breakpoint(sm) {
+        flex-direction: row;
+      }
+
+      .btn {
+        @include mix.flex-center;
+        gap: var.$spacer-2;
+      }
     }
 
     .defect-previews {
@@ -147,10 +254,10 @@
 
       .preview-item {
         position: relative;
-        width: 60px;
-        height: 60px;
+        width: 50px;
+        height: 50px;
         border: 1px solid var.$border-color;
-        border-radius: var.$border-radius;
+        border-radius: var.$border-radius-sm;
         overflow: hidden;
 
         img {
@@ -163,7 +270,7 @@
           position: absolute;
           top: 2px;
           right: 2px;
-          background-color: rgba(var.$danger, 0.7);
+          background-color: rgba(var.$danger, 0.8);
           color: white;
           border-radius: 50%;
           width: 20px;
@@ -173,6 +280,9 @@
           border: none;
           cursor: pointer;
           transition: var.$transition-default;
+          -webkit-backdrop-filter: blur(2px);
+          backdrop-filter: blur(2px);
+
           &:hover {
             background-color: var.$danger;
             transform: scale(1.1);
@@ -183,27 +293,46 @@
   }
 
   .missing-defects-group {
-    // --- FIX: Declarations are now listed BEFORE the nested rule ---
     background-color: var.$surface-light;
     padding: var.$spacer-3;
     border-radius: var.$border-radius;
     border: 1px solid var.$border-color-light;
-    margin: 0; // Reset default margin from .form-group
+    margin: 0;
 
-    // Span full width on larger screens (nested rule is now last)
     @include mix.screen-breakpoint(lg) {
       grid-column: 1 / -1;
     }
   }
 
+  // --- Completion & Status ---
   .completion-card {
     margin-top: var.$spacer-4;
     padding: var.$spacer-3;
     margin-bottom: var.$spacer-3;
+
+    // Fix for checkbox alignment on mobile when label wraps
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: var.$spacer-2;
+
+      input[type="checkbox"] {
+        flex-shrink: 0;
+        margin-top: 4px; // Align checkbox with first line of text
+      }
+
+      label {
+        margin: 0;
+        font-size: var.$font-size-sm;
+        line-height: 1.5;
+        @include mix.screen-breakpoint(md) {
+          font-size: var.$font-size-base;
+        }
+      }
+    }
   }
 
   .completion-status-view {
-    margin-top: 0;
     margin-bottom: var.$spacer-4;
     font-weight: var.$font-weight-medium;
     padding: var.$spacer-3 var.$spacer-4;
@@ -221,20 +350,34 @@
     }
   }
 
+  // --- Form Actions ---
+  .form-actions-top,
+  .form-actions-bottom {
+    display: flex;
+    justify-content: center;
+
+    @include mix.screen-breakpoint(sm) {
+      justify-content: flex-end;
+    }
+
+    .btn {
+      width: 100%;
+      @include mix.screen-breakpoint(sm) {
+        width: auto;
+      }
+    }
+  }
+
   .form-actions-top {
     border-bottom: 1px solid var.$border-color-light;
     padding-bottom: var.$spacer-3;
     margin-bottom: var.$spacer-4;
     margin-top: 0;
-    display: flex;
-    justify-content: flex-end;
   }
 
   .form-actions-bottom {
     margin-top: var.$spacer-4;
     padding-top: var.$spacer-3;
     border-top: 1px solid var.$border-color-light;
-    display: flex;
-    justify-content: flex-end;
   }
 }

@@ -21,11 +21,18 @@ import ProvidedEstimationsPage from "./pages/ProvidedEstimationsPage";
 import SubmissionsForEstimationPage from "./pages/SubmissionsForEstimationPage";
 import MaterialInspectionPage from "./pages/MaterialInspectionPage";
 import CostEstimateReportPage from "./pages/CostEstimateReportPage";
+import StockReportPage from './pages/StockReportPage';
+import MyReworksPage from './pages/MyReworksPage';
+import MyRejectionsPage from './pages/MyRejectionsPage';
+import AdminReworksPage from './pages/AdminReworksPage'; // Import new admin page
+import AdminRejectionsPage from './pages/AdminRejectionsPage';
+import ReworksPage from './pages/ReworksPage'; // Correct: Only one import is needed
 import { ToastContainer } from "react-toastify";
 import { FaBars } from "react-icons/fa";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.scss";
 
+// No changes needed for ProtectedRoute
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth();
   if (loading) {
@@ -82,14 +89,18 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+
+          {/* === MODIFICATION START: UPDATED ROUTE PERMISSIONS === */}
           <Route
             path="/material-form/:materialCode"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={["admin", "cataloguer"]}>
                 <MaterialDataFormPage />
               </ProtectedRoute>
             }
           />
+          {/* === MODIFICATION END === */}
+
           <Route
             path="/material-status"
             element={
@@ -98,6 +109,20 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+
+
+            {/* === NEW STOCK REPORT ROUTE === */}
+          <Route
+            path="/stock-report"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <StockReportPage />
+              </ProtectedRoute>
+            }
+          />
+           {/* === NEW ADMIN ROUTES ADDED === */}
+
+           
           <Route
             path="/user-management"
             element={
@@ -114,8 +139,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* === FIX: ADD 'thirdparties' TO ALLOWED ROLES FOR INSPECTION PAGE === */}
           <Route
             path="/inspection/:submissionId"
             element={
@@ -126,7 +149,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/material-management"
             element={
@@ -143,6 +165,25 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+           {/* === NEW ADMIN ROUTES ADDED === */}
+          <Route
+            path="/admin/reworks"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminReworksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/rejections"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminRejectionsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* === END OF NEW ADMIN ROUTES === */}
+          
           <Route
             path="/submissions-for-estimation"
             element={
@@ -151,8 +192,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* === ADD THIS NEW ROUTE === */}
           <Route
             path="/provided-estimations"
             element={
@@ -161,6 +200,41 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          
+          {/* === MODIFICATION START: NEW ROUTE FOR REWORKS PAGE === */}
+          <Route
+            path="/reworks"
+            element={
+              <ProtectedRoute allowedRoles={["cataloguer"]}>
+                <ReworksPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* === MODIFICATION END === */}
+
+
+          {/* --- MODIFICATION: Add the two new routes --- */}
+          <Route
+            path="/my-reworks"
+            element={
+              <ProtectedRoute allowedRoles={["thirdparties"]}>
+                <MyReworksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-rejections"
+            element={
+              <ProtectedRoute allowedRoles={["thirdparties"]}>
+                <MyRejectionsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* The old "/my-actions" route is now removed */}
+          {/* --- END MODIFICATION --- */}
+
+
+
           <Route
             path="*"
             element={<Navigate to={user ? "/dashboard" : "/login"} replace />}
@@ -171,6 +245,7 @@ function AppContent() {
   );
 }
 
+// No changes needed for App component
 function App() {
   return (
     <Router>

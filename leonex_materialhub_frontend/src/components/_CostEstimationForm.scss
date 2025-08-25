@@ -3,54 +3,157 @@
 @use "../scss/utils/mixins" as mix;
 
 .cost-estimation-form {
-  // <<< FIX: Declarations moved before @include
+  // Base card setup
   margin-top: var.$spacer-5;
-  border-top: 4px solid var.$accent;
+  border-top: 4px solid var.$primary; // Using primary color for a stronger brand connection
   position: relative;
-  @include mix.card-style;
+  // Apply the card style mixin, but override the padding for more control
+  @include mix.card-style($padding: var.$spacer-5, $radius: var.$border-radius-lg);
 
-  h3 {
+  // --- NEW: Styles for the warning/error notice box ---
+  .estimation-notice {
+    padding: var.$spacer-3 var.$spacer-4;
+    margin-bottom: var.$spacer-5;
+    border-radius: var.$border-radius;
+    border-left-width: 5px;
+    border-left-style: solid;
+    
+    strong {
+      display: block;
+      font-weight: var.$font-weight-bold;
+      margin-bottom: var.$spacer-1;
+      font-size: var.$font-size-base;
+    }
+    p {
+      margin: 0;
+      font-size: var.$font-size-sm;
+    }
+
+    // Warning variant (amber/yellow)
+    &.warning {
+      background-color: #fffbeb; // A light yellow
+      border-color: #f59e0b; // Amber color
+      color: #b45309; // Darker amber for text
+    }
+
+    // Error variant (red)
+    &.error {
+      background-color: #fef2f2; // A light red
+      border-color: #ef4444; // Red color
+      color: #b91c1c; // Darker red for text
+    }
+  }
+  // --- END NEW STYLES ---
+
+  // --- Typography ---
+  h4 {
     margin-top: 0;
     margin-bottom: var.$spacer-2;
+    font-weight: var.$font-weight-semibold;
+    color: var.$text-primary;
   }
-  p {
+
+  .form-subtitle {
     font-size: var.$font-size-sm;
     color: var.$text-secondary;
     margin-bottom: var.$spacer-5;
   }
 
+  // --- Grid Layout for Inputs ---
   .estimation-grid {
     display: grid;
-    gap: var.$spacer-4;
+    gap: var.$spacer-5;
+    margin-bottom: var.$spacer-4;
+
     @include mix.screen-breakpoint(md) {
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: var.$spacer-5;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     }
   }
 
-  .form-group-pair {
+  // --- Individual Input Group Styling ---
+  .form-group {
     label {
       font-weight: var.$font-weight-medium;
       display: block;
       margin-bottom: var.$spacer-2;
       font-size: var.$font-size-base;
+      color: var.$text-secondary; // Softer color for the label
     }
-    .input-row {
-      display: flex;
-      flex-direction: column;
-      gap: var.$spacer-2;
 
-      @include mix.screen-breakpoint(sm) {
-        flex-direction: row;
-        gap: var.$spacer-3;
+    .input-with-calc {
+      .form-control {
+        // Ensure the input field has consistent styling
+        margin-bottom: var.$spacer-1;
+      }
+
+      // Live calculation display
+      .dynamic-calculation {
+        margin-top: var.$spacer-2;
+        padding: var.$spacer-2 var.$spacer-3;
+        font-size: var.$font-size-sm;
+        color: var.$primary-dark;
+        background-color: var.$primary-light;
+        border-radius: var.$border-radius;
+        border-left: 4px solid var.$primary;
+        text-align: right;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        opacity: 1;
+        transform: translateY(0);
+
+        strong {
+          font-weight: var.$font-weight-bold;
+          color: var.$success;
+          font-size: var.$font-size-base; // Make the total slightly larger
+        }
       }
     }
   }
 
+  // --- Grand Total Section ---
+  // This is the hero element of the form
+  .grand-total-section {
+    margin: var.$spacer-6 0;
+    padding: var.$spacer-4 var.$spacer-5;
+    border-radius: var.$border-radius-lg;
+    text-align: center;
+    background: linear-gradient(135deg, var.$surface-light, var.$surface-color);
+    border: 1px solid var.$border-color;
+    box-shadow: var.$box-shadow-sm;
+
+    h4 {
+      margin: 0 0 var.$spacer-2 0;
+      font-size: var.$font-size-lg;
+      color: var.$text-secondary;
+      font-weight: var.$font-weight-medium;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .total-amount {
+      font-size: 2.8rem;
+      font-weight: var.$font-weight-bold;
+      color: var.$success;
+      margin: 0;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      // Use a monospace font for a clean, numerical look
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+        monospace;
+      
+      // Add a subtle text shadow to make it pop
+      text-shadow: 1px 1px 2px rgba(0,0,0, 0.05);
+    }
+  }
+
+  // --- Form Actions / Submit Button ---
   .form-actions-bottom {
     margin-top: var.$spacer-5;
-    padding-top: var.$spacer-4;
+    padding-top: var.$spacer-5;
     border-top: 1px solid var.$border-color-light;
     text-align: right;
+
+    .btn {
+      min-width: 180px; // Give the button a nice, wide feel
+    }
   }
 }

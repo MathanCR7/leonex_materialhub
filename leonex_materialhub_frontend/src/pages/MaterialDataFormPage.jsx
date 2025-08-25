@@ -27,6 +27,7 @@ import {
   FaTrash,
   FaCamera,
   FaFileUpload,
+  FaLock, // <<<--- NEW ICON IMPORTED
 } from "react-icons/fa";
 import "./_MaterialDataFormPage.scss";
 
@@ -111,6 +112,7 @@ const defectCategoriesConfig = [
 
 const initialFormDataBase = {
   plantlocation: "",
+  bin_location: "",
   uom: "",
   category: "",
   soh_quantity: "0",
@@ -124,6 +126,7 @@ const initialFormDataBase = {
   other_defects_reasons: "",
   missing_defects_status: "",
 };
+
 const initialFilesState = goodMediaFieldsConfig.reduce(
   (acc, field) => ({ ...acc, [field.name]: null }),
   {}
@@ -164,6 +167,9 @@ const MaterialDataFormPage = () => {
   const plantCodeFromUrl = searchParams.get("plantCode");
   const { user, loading: authLoading } = useAuth();
 
+  // --- MODIFICATION: Store full submission object for workflow state ---
+  const [currentSubmission, setCurrentSubmission] = useState(null);
+
   const [currentSubmissionId, setCurrentSubmissionId] = useState(
     location.state?.submissionId || null
   );
@@ -198,16 +204,22 @@ const MaterialDataFormPage = () => {
       setDefectFiles(initialDefectFilesState);
       setInitialDefectMedia(initialDefectFilesState);
       setCurrentSubmissionId(null);
+      // --- MODIFICATION: Reset submission state too ---
+      setCurrentSubmission(null);
       setIsEditMode(canEdit);
     },
     [canEdit]
   );
-
+  
   const populateFormWithExistingSubmission = useCallback(
     (submission, masterData) => {
+      // --- MODIFICATION: Store full submission object ---
+      setCurrentSubmission(submission);
+
       setFormData({
         plantlocation:
           submission.plantlocation || masterData?.plantlocation || "",
+        bin_location: submission.bin_location || "",
         uom: submission.uom || masterData?.uom || "",
         category: submission.category || masterData?.category || "",
         soh_quantity: String(
@@ -243,9 +255,17 @@ const MaterialDataFormPage = () => {
       setDefectFiles(loadedDefectMedia);
       setInitialDefectMedia(loadedDefectMedia);
       setCurrentSubmissionId(submission.id);
-      setIsEditMode(canEdit && !submission.is_completed);
+
+      // --- MODIFICATION: Rework workflow logic for edit mode ---
+      if (user?.role === "cataloguer") {
+        const isEditableForRework = submission.approval_status === 'REWORK_REQUESTED';
+        setIsEditMode(isEditableForRework);
+      } else {
+        // Fallback to original logic for admin
+        setIsEditMode(canEdit && !submission.is_completed);
+      }
     },
-    [canEdit]
+    [canEdit, user?.role] // Depend on user role to re-evaluate
   );
 
   useEffect(() => {
@@ -258,6 +278,7 @@ const MaterialDataFormPage = () => {
           user.plants?.some((p) => p.plantcode === plantCodeFromUrl));
       setIsViewOnlyMode(userIsViewer);
       setCanEdit(userCanEditThisPlant);
+      // --- MODIFICATION: Initial edit mode depends on if there's an existing submission ---
       setIsEditMode(userCanEditThisPlant && !currentSubmissionId);
     }
   }, [user, location.state, plantCodeFromUrl, currentSubmissionId]);
@@ -426,6 +447,12 @@ const MaterialDataFormPage = () => {
       if (currentSubmissionId) {
         await updateMaterialData(currentSubmissionId, dataPayload);
         toast.success("Data updated successfully!");
+        // --- MODIFICATION: Navigate after rework submission ---
+        if (currentSubmission?.approval_status === 'REWORK_REQUESTED') {
+            toast.info("Rework submitted. Navigating back to status page.");
+            navigate('/material-status');
+            return;
+        }
       } else {
         await submitMaterialData(dataPayload);
         toast.success("Data submitted successfully!");
@@ -475,6 +502,17 @@ const MaterialDataFormPage = () => {
       </div>
     );
 
+  // --- MODIFICATION: Determine lock reason for display ---
+  let lockedReason = "";
+  if (user?.role === 'cataloguer' && !isEditMode && currentSubmission) {
+      switch(currentSubmission.approval_status) {
+          case 'PENDING': lockedReason = 'This submission is pending initial review and cannot be edited.'; break;
+          case 'APPROVED': lockedReason = 'This submission has been approved and is locked.'; break;
+          case 'REWORK_COMPLETED': lockedReason = 'This rework has been completed and is awaiting admin review.'; break;
+      }
+  }
+
+
   return (
     <div className="material-data-form-page">
       <header className="page-header">
@@ -505,6 +543,18 @@ const MaterialDataFormPage = () => {
           {formData.plantlocation && ` - ${formData.plantlocation}`}
         </div>
       </header>
+      
+      {/* --- MODIFICATION: Display workflow status notices --- */}
+      {lockedReason && (
+        <div className="alert alert-warning" style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem'}}>
+          <FaLock /> <strong>Form Locked:</strong> {lockedReason}
+        </div>
+      )}
+      {currentSubmission?.approval_status === 'REWORK_REQUESTED' && (
+        <div className="alert alert-danger" style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.5rem'}}>
+          <FaExclamationCircle /> <strong>Rework Required:</strong> {currentSubmission.rework_reason}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="material-form">
         {!isViewOnlyMode && currentSubmissionId && !isEditMode && canEdit && (
@@ -544,6 +594,20 @@ const MaterialDataFormPage = () => {
                     readOnly
                   />
                 </div>
+
+                <div className="form-group">
+                  <label htmlFor="bin_location">Bin Location</label>
+                  <input
+                    type="text"
+                    id="bin_location"
+                    name="bin_location"
+                    className="form-control"
+                    value={formData.bin_location}
+                    onChange={handleInputChange}
+                    placeholder="Enter bin location"
+                  />
+                </div>
+                
                 <div className="form-group">
                   <label htmlFor="uom">UOM</label>
                   <input
@@ -673,7 +737,6 @@ const MaterialDataFormPage = () => {
 
             <section className="form-section">
               <h2 className="form-section-title">Defects Details</h2>
-              {/* --- CHANGE: ADDED WRAPPER DIV FOR GRID --- */}
               <div className="defects-grid-container">
                 {defectCategoriesConfig.map((c) => (
                   <div key={c.name} className="defect-category-group">
@@ -686,7 +749,7 @@ const MaterialDataFormPage = () => {
                         name={c.reasonField}
                         value={formData[c.reasonField]}
                         onChange={handleInputChange}
-                        rows="2" /* --- CHANGE: REDUCED ROWS --- */
+                        rows="2"
                         className="form-control"
                       />
                     </div>
@@ -754,7 +817,6 @@ const MaterialDataFormPage = () => {
                     </div>
                   </div>
                 ))}
-                {/* --- CHANGE: ADDED SPECIFIC CLASS FOR STYLING --- */}
                 <div className="form-group missing-defects-group">
                   <label htmlFor="missing_defects_status">
                     Missing Defects Status / Remarks

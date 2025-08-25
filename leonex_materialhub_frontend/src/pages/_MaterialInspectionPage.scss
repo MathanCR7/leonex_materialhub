@@ -1,13 +1,14 @@
+@use "sass:color";
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 
 .inspection-page {
   background-color: var.$bg-color;
   min-height: 100vh;
-  padding: var.$spacer-4 var.$spacer-3; // Smaller padding for mobile
+  padding: var.$spacer-4 var.$spacer-3;
 
   @include mix.screen-breakpoint(md) {
-    padding: var.$spacer-5 var.$spacer-6; // Larger padding for desktop
+    padding: var.$spacer-5 var.$spacer-6;
   }
 }
 
@@ -24,7 +25,7 @@
     display: flex;
     align-items: center;
     gap: var.$spacer-3;
-    min-width: 0; // Allow title to shrink
+    min-width: 0;
   }
 
   .back-link {
@@ -48,7 +49,7 @@
 
   .header-title {
     h1 {
-      font-size: 1.25rem; // Reduced for mobile
+      font-size: 1.25rem;
       font-weight: var.$font-weight-bold;
       margin: 0;
       color: var.$text-primary;
@@ -68,7 +69,7 @@
 
     @include mix.screen-breakpoint(md) {
       h1 {
-        font-size: 1.75rem; // Larger on desktop
+        font-size: 1.75rem;
       }
     }
   }
@@ -76,12 +77,47 @@
   .header-logo {
     max-height: 35px;
     width: auto;
-    display: none; // Hide on small screens to save space
+    display: none;
 
     @include mix.screen-breakpoint(sm) {
-      display: block; // Show on larger screens
+      display: block;
       max-height: 40px;
     }
+  }
+}
+
+.status-banner {
+  padding: var.$spacer-3 var.$spacer-4;
+  margin-bottom: var.$spacer-5;
+  border-radius: var.$border-radius;
+  display: flex;
+  align-items: center;
+  gap: var.$spacer-3;
+  font-size: 1rem;
+  font-weight: var.$font-weight-semibold;
+  color: #fff;
+  border-left: 5px solid;
+
+  .status-icon {
+    font-size: 1.5rem;
+  }
+
+  &.status-approved {
+    background-color: var.$success;
+    border-color: color.adjust(var.$success, $lightness: -15%);
+  }
+  &.status-rework_requested {
+    background-color: var.$danger;
+    border-color: color.adjust(var.$danger, $lightness: -15%);
+  }
+  &.status-rework_completed {
+    background-color: var.$warning;
+    color: var.$text-primary;
+    border-color: color.adjust(var.$warning, $lightness: -15%);
+  }
+  &.status-pending {
+    background-color: var.$secondary;
+    border-color: color.adjust(var.$secondary, $lightness: -15%);
   }
 }
 
@@ -92,7 +128,7 @@
   align-items: start;
 
   @include mix.screen-breakpoint(lg) {
-    grid-template-columns: 400px 1fr; // Fixed width for details
+    grid-template-columns: 400px 1fr;
     gap: var.$spacer-5;
   }
   @include mix.screen-breakpoint(xl) {
@@ -129,7 +165,6 @@
     gap: var.$spacer-3;
   }
 
-  // Use the card-style mixin for consistent appearance
   @include mix.card-style(
     var.$spacer-4,
     var.$border-radius,
@@ -137,14 +172,94 @@
   );
 
   @include mix.screen-breakpoint(md) {
-    // Override padding from mixin for larger screens if needed
     padding: var.$spacer-5;
+  }
+
+  &.admin-actions-card {
+    background-color: var.$surface-light;
+    border: 1px solid var.$border-color;
+
+    h2 {
+      border-bottom-color: var.$text-secondary;
+    }
+
+    .rework-section {
+      margin-bottom: var.$spacer-4;
+      label {
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+        margin-bottom: var.$spacer-2;
+        display: block;
+        font-size: var.$font-size-sm;
+      }
+      textarea.form-control {
+        background-color: var.$surface-color;
+        &:focus {
+          border-color: var.$primary;
+          box-shadow: var.$box-shadow-focus;
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: var.$spacer-3;
+      margin-top: var.$spacer-4;
+      border-top: 1px solid var.$border-color;
+      padding-top: var.$spacer-4;
+
+      .btn {
+        @include mix.flex-center;
+        flex-grow: 1;
+        gap: var.$spacer-2;
+        font-weight: var.$font-weight-bold;
+        font-size: 0.95rem;
+        padding: var.$spacer-3 var.$spacer-4;
+        border-radius: var.$border-radius;
+        border: none;
+        cursor: pointer;
+        transition: var.$transition-default;
+        box-shadow: var.$box-shadow-sm;
+        
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: var.$box-shadow-sm;
+        }
+        
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: var.$box-shadow;
+        }
+
+        .spinner-icon {
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      .btn-danger {
+        background-color: var.$danger;
+        color: #fff;
+        &:hover:not(:disabled) {
+          background-color: color.adjust(var.$danger, $lightness: -8%);
+        }
+      }
+
+      .btn-success {
+        background-color: var.$success;
+        color: #fff;
+        &:hover:not(:disabled) {
+          background-color: color.adjust(var.$success, $lightness: -8%);
+        }
+      }
+    }
   }
 }
 
 .detail-item {
   display: flex;
-  flex-direction: column; // Stacked by default for mobile
+  flex-direction: column;
   gap: var.$spacer-1;
   padding-bottom: var.$spacer-3;
   border-bottom: 1px solid var.$border-color-light;
@@ -168,7 +283,6 @@
     font-size: var.$font-size-base;
   }
 
-  // Switch to two-column layout on larger screens
   @include mix.screen-breakpoint(sm) {
     display: grid;
     grid-template-columns: 140px 1fr;
@@ -207,6 +321,11 @@
     strong {
       color: var.$text-primary;
     }
+     // --- NEWLY ADDED CODE ---
+    .has-reason {
+      color: var.$danger;
+      font-weight: var.$font-weight-semibold;
+    }
   }
 }
 
@@ -239,7 +358,7 @@
   border-radius: var.$border-radius;
   box-shadow: var.$box-shadow-sm;
   aspect-ratio: 4 / 3;
-  background-color: var.$surface-light; // Placeholder bg
+  background-color: var.$surface-light;
 
   img {
     display: block;
@@ -252,7 +371,7 @@
   .image-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(var.$text-primary, 0.6);
+    background: color.change(var.$text-primary, $alpha: 0.6);
     color: #fff;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -299,14 +418,12 @@
   font-size: var.$font-size-base;
 
   &:hover {
-    background-color: var.$danger;
-    opacity: 0.85;
+    background-color: color.adjust(var.$danger, $lightness: -8%);
     box-shadow: var.$box-shadow-lg;
     transform: translateY(-2px);
   }
 }
 
-// Fullscreen states (Loading/Error)
 .loading-fullscreen,
 .full-width-error,
 .info-message {
@@ -324,11 +441,171 @@
   }
 
   &.alert {
-    // Style for error state
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
     font-size: 1.1rem;
     padding: var.$spacer-4;
+  }
+}
+
+.inspection-navigation {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: var.$spacer-5;
+  padding-top: var.$spacer-4;
+  border-top: 1px solid var.$border-color;
+
+  .nav-button {
+    @include mix.flex-center;
+    gap: var.$spacer-2;
+    background-color: var.$primary;
+    color: #fff;
+    border: none;
+    padding: var.$spacer-2 var.$spacer-4;
+    border-radius: var.$border-radius;
+    font-size: 0.9rem;
+    font-weight: var.$font-weight-semibold;
+    cursor: pointer;
+    transition: var.$transition-default;
+
+    &:disabled {
+      background-color: var.$text-muted;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    &:not(:disabled):hover {
+      background-color: var.$primary-dark;
+      transform: translateY(-2px);
+      box-shadow: var.$box-shadow;
+    }
+
+    svg {
+      font-size: 1rem;
+    }
+  }
+}
+
+// ==========================================================================
+// STYLES FOR THE THIRD PARTY DECISION PANEL
+// ==========================================================================
+.third-party-panel-wrapper {
+  margin-top: var.$spacer-5;
+}
+
+.third-party-panel {
+  // --- SOLUTION ---
+  // The `overflow: hidden` declaration is moved before the @include.
+  overflow: hidden;
+  @include mix.card-style(0, var.$border-radius-lg, var.$surface-color);
+  // --- END SOLUTION ---
+
+  .panel-tabs {
+    display: flex;
+    background-color: var.$surface-light;
+    border-bottom: 1px solid var.$border-color;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: var.$spacer-3 var.$spacer-4;
+    border: none;
+    background-color: transparent;
+    font-size: 1rem;
+    font-weight: var.$font-weight-semibold;
+    color: var.$text-secondary;
+    cursor: pointer;
+    transition: var.$transition-default;
+    border-bottom: 3px solid transparent;
+    @include mix.flex-center;
+    gap: var.$spacer-2;
+
+    &:hover {
+      background-color: var.$border-color-light;
+      color: var.$text-primary;
+    }
+
+    &.active {
+      &.estimation {
+        color: var.$success;
+        border-bottom-color: var.$success;
+      }
+      &.rework {
+        color: var.$warning;
+        border-bottom-color: var.$warning;
+      }
+      &.rejection {
+        color: var.$danger;
+        border-bottom-color: var.$danger;
+      }
+    }
+
+    @include mix.screen-breakpoint(md) {
+      padding: var.$spacer-4 var.$spacer-5;
+    }
+  }
+
+  .panel-content {
+    padding: var.$spacer-4;
+    @include mix.screen-breakpoint(md) {
+      padding: var.$spacer-5;
+    }
+  }
+
+  .reason-input-section {
+    h4 {
+      font-weight: var.$font-weight-semibold;
+      color: var.$text-primary;
+      margin: 0 0 var.$spacer-2 0;
+    }
+    p {
+      color: var.$text-secondary;
+      margin: 0 0 var.$spacer-3 0;
+      font-size: var.$font-size-sm;
+    }
+    textarea.form-control {
+      resize: vertical;
+      min-height: 120px;
+    }
+  }
+
+  .form-actions-bottom {
+    margin-top: var.$spacer-5;
+    padding-top: var.$spacer-4;
+    border-top: 1px solid var.$border-color-light;
+    text-align: right;
+
+    .btn-primary {
+      @include mix.flex-center;
+      display: inline-flex;
+      gap: var.$spacer-2;
+      background-color: var.$primary;
+      color: #fff;
+      border: none;
+      padding: var.$spacer-3 var.$spacer-4;
+      border-radius: var.$border-radius;
+      font-size: 1rem;
+      font-weight: var.$font-weight-semibold;
+      cursor: pointer;
+      transition: var.$transition-default;
+      
+      &:disabled {
+        background-color: var.$text-muted;
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      &:not(:disabled):hover {
+        background-color: var.$primary-dark;
+        box-shadow: var.$box-shadow;
+        transform: translateY(-2px);
+      }
+    }
+
+    .spinner-icon-btn {
+      animation: spin 1s linear infinite;
+    }
   }
 }

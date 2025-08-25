@@ -32,7 +32,6 @@
 
   .submissions-table-container {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
     @include mix.card-style($padding: 0);
   }
 
@@ -54,6 +53,7 @@
       color: var.$text-secondary;
       background-color: var.$surface-light;
       cursor: pointer;
+      -webkit-user-select: none;
       user-select: none;
       &:hover {
         color: var.$text-primary;

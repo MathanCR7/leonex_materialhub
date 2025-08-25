@@ -1,3 +1,5 @@
+// routes/submissions.js
+
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -5,8 +7,10 @@ const path = require("path");
 const fs = require("fs-extra");
 const submissionController = require("../controllers/submissionController");
 const authenticateToken = require("../middleware/authenticateToken");
-const { canSubmitData } = require("../middleware/authorization");
-const pool = require("../config/db");
+
+// --- MODIFICATION: Import from the exported object ---
+const { canSubmitData, isAdmin } = require("../middleware/authorization");
+const pool =require("../config/db");
 
 // Middleware to fetch details for PUT requests to set upload paths
 const attachSubmissionDetailsForUpdate = async (req, res, next) => {
@@ -22,7 +26,6 @@ const attachSubmissionDetailsForUpdate = async (req, res, next) => {
           plant: rows[0].plant,
         };
       } else {
-        // If submission doesn't exist, stop before multer tries to process files.
         return res.status(404).json({
           message: "Submission not found, cannot determine upload path.",
         });
@@ -37,13 +40,12 @@ const attachSubmissionDetailsForUpdate = async (req, res, next) => {
   next();
 };
 
-// Multer disk storage configuration
+// ... (The entire multer setup is correct, no changes needed)
 const storage = multer.diskStorage({
   destination: async function (req, file, cb) {
     let materialCodeForPath;
     let plantCodeForPath;
 
-    // Determine materialCode and plantCode based on request type
     if (req.method === "POST" && req.originalUrl.endsWith("/submit")) {
       materialCodeForPath = req.body.material_code;
       plantCodeForPath = req.body.plant;
@@ -74,17 +76,11 @@ const storage = multer.diskStorage({
       `${materialCodeForPath}_${plantCodeForPath}`
     );
 
-    // Determine subfolder based on file fieldname
-    let subFolder = "temp_uploads"; // Default
+    let subFolder = "temp_uploads";
     const goodMediaFields = [
-      "image_specification",
-      "image_packing_condition",
-      "image_item_spec_mentioned",
-      "image_product_top_view",
-      "image_3d_view",
-      "image_side_view_thickness",
-      "image_stock_condition_packing",
-      "video_item_inspection",
+      "image_specification", "image_packing_condition", "image_item_spec_mentioned",
+      "image_product_top_view", "image_3d_view", "image_side_view_thickness",
+      "image_stock_condition_packing", "video_item_inspection",
     ];
 
     if (goodMediaFields.includes(file.fieldname)) {
@@ -116,7 +112,6 @@ const storage = multer.diskStorage({
     );
   },
 });
-
 const fileFilter = (req, file, cb) => {
   if (
     file.mimetype.startsWith("image/") ||
@@ -130,32 +125,23 @@ const fileFilter = (req, file, cb) => {
     );
   }
 };
-
 const upload = multer({
   storage: storage,
   fileFilter: fileFilter,
 }).fields([
-  { name: "image_specification", maxCount: 1 },
-  { name: "image_packing_condition", maxCount: 1 },
-  { name: "image_item_spec_mentioned", maxCount: 1 },
-  { name: "image_product_top_view", maxCount: 1 },
-  { name: "image_3d_view", maxCount: 1 },
-  { name: "image_side_view_thickness", maxCount: 1 },
-  { name: "image_stock_condition_packing", maxCount: 1 },
-  { name: "video_item_inspection", maxCount: 1 },
-  { name: "package_defect_images", maxCount: 10 },
-  { name: "physical_defect_images", maxCount: 10 },
+  { name: "image_specification", maxCount: 1 }, { name: "image_packing_condition", maxCount: 1 },
+  { name: "image_item_spec_mentioned", maxCount: 1 }, { name: "image_product_top_view", maxCount: 1 },
+  { name: "image_3d_view", maxCount: 1 }, { name: "image_side_view_thickness", maxCount: 1 },
+  { name: "image_stock_condition_packing", maxCount: 1 }, { name: "video_item_inspection", maxCount: 1 },
+  { name: "package_defect_images", maxCount: 10 }, { name: "physical_defect_images", maxCount: 10 },
   { name: "other_defect_images", maxCount: 10 },
 ]);
-
-// Middleware to handle Multer-specific errors
 const handleUploadErrors = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     return res
       .status(400)
       .json({ message: `File upload error: ${err.message}`, code: err.code });
   } else if (err) {
-    // For other errors (e.g., from destination function)
     return res
       .status(400)
       .json({ message: `File upload error: ${err.message}` });
@@ -163,7 +149,8 @@ const handleUploadErrors = (err, req, res, next) => {
   next();
 };
 
-// All routes below are protected
+
+// All routes below are protected by this global middleware
 router.use(authenticateToken);
 
 // POST route for new submissions
@@ -171,7 +158,6 @@ router.post(
   "/submit",
   canSubmitData,
   (req, res, next) => {
-    // Use a wrapper to call multer and its error handler
     upload(req, res, (err) => handleUploadErrors(err, req, res, next));
   },
   submissionController.submitMaterialData
@@ -183,18 +169,24 @@ router.put(
   canSubmitData,
   attachSubmissionDetailsForUpdate,
   (req, res, next) => {
-    // Wrapper for multer on update
     upload(req, res, (err) => handleUploadErrors(err, req, res, next));
   },
   submissionController.updateMaterialData
 );
 
-// GET routes are accessible to all authenticated users; controllers handle role-based filtering
+// GET routes
 router.get("/:submissionId", submissionController.getSubmissionDetails);
 router.get(
   "/latest/:materialCode",
   submissionController.getLatestSubmissionByMaterialCode
 );
 router.get("/completed/all", submissionController.getCompletedSubmissions);
+
+// --- MODIFICATION: Correctly defined and protected workflow routes ---
+router.get('/reworks/assigned', submissionController.getAssignedReworks);
+
+// This route is protected by `authenticateToken` (from router.use) and then the specific `isAdmin` middleware.
+router.put('/status/:submissionId', isAdmin, submissionController.updateSubmissionStatus);
+// --- END MODIFICATION ---
 
 module.exports = router;

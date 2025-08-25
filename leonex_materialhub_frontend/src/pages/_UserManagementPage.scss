@@ -1,4 +1,3 @@
-// src/pages/_UserManagementPage.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 @use "../scss/buttons" as btn;
@@ -18,7 +17,7 @@
       display: flex;
       align-items: center;
       gap: var.$spacer-3;
-      font-size: 1.875rem;
+      font-size: 1.6rem; // Adjusted for better mobile scaling
       font-weight: var.$font-weight-bold;
       color: var.$text-primary;
       margin: 0;
@@ -31,74 +30,150 @@
       max-width: 600px;
     }
 
+    // Desktop layout for header
     @include mix.screen-breakpoint(md) {
       flex-direction: row;
       justify-content: space-between;
       align-items: center;
       gap: var.$spacer-4;
-
+      h1 {
+        font-size: 1.875rem; // Restore larger font size for desktop
+      }
       .page-subtitle {
         margin-bottom: 0;
       }
     }
   }
 
-  // Your card-style mixin already includes the border, so no separate declaration is needed.
+  // --- RESPONSIVE TABLE STYLES ---
+
+  // On mobile, the container is transparent; each row becomes a card.
   .users-table-container {
-    overflow-x: auto;
-    @include mix.card-style($padding: 0);
+    width: 100%;
   }
 
   .users-table {
     width: 100%;
-    min-width: 900px;
     border-collapse: collapse;
 
-    th,
-    td {
-      padding: var.$spacer-4;
-      text-align: left;
-      border-bottom: 1px solid var.$border-color-light;
-      vertical-align: middle;
-      color: var.$text-secondary;
-    }
-
-    th {
-      background-color: var.$surface-light;
-      font-size: var.$font-size-sm;
-      font-weight: var.$font-weight-semibold;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var.$text-secondary;
+    // --- MOBILE VIEW (Card-based list) ---
+    thead {
+      display: none;
     }
 
     tbody tr {
+      display: block;
+
+      // FIX: Manually applying styles from the `card-style` mixin and our own styles
+      // This is done to ensure all declarations come BEFORE nested rules.
+      
+      // Declarations from mixin (with our custom padding)
+      background-color: var.$surface-color;
+      border-radius: var.$border-radius-lg;
+      border: var.$border-width solid var.$border-color-light;
+      padding: var.$spacer-2; // Custom padding that was passed to the mixin
       transition: var.$transition-default;
+      
+      // Our custom declarations that were causing the warning
+      margin-bottom: var.$spacer-4;
+      box-shadow: var.$box-shadow-lg; // Our intended stronger shadow
+      
+      // The nested rule that was inside the mixin
+      @include mix.screen-breakpoint(md) {
+        padding: var.$spacer-5;
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var.$spacer-3 var.$spacer-4;
+      text-align: right;
+      color: var.$text-secondary;
+      border-bottom: 1px solid var.$border-color-light;
+      gap: var.$spacer-4;
+
+      // Add labels using ::before pseudo-elements for mobile view
+      &::before {
+        content: attr(data-label);
+        font-weight: var.$font-weight-medium;
+        color: var.$text-primary;
+        text-align: left;
+      }
+
+      &:nth-of-type(1)::before { content: "Username"; }
+      &:nth-of-type(2)::before { content: "Role"; }
+      &:nth-of-type(3)::before { content: "Status"; }
+      &:nth-of-type(4)::before { content: "Assigned Plants"; }
+      &:nth-of-type(5)::before { content: "Expires On"; }
+      &:nth-of-type(6)::before { content: "Actions"; }
+
+      &:first-child {
+        font-weight: var.$font-weight-medium;
+        color: var.$text-primary;
+      }
       &:last-child {
-        td {
-          border-bottom: none;
+        border-bottom: none;
+      }
+    }
+
+    // --- DESKTOP VIEW (Traditional table) ---
+    @include mix.screen-breakpoint(md) {
+      min-width: 900px;
+
+      .users-table-container {
+        overflow-x: auto;
+        @include mix.card-style($padding: 0);
+      }
+
+      thead {
+        display: table-header-group;
+      }
+      tbody tr {
+        display: table-row;
+        margin-bottom: 0;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        transition: var.$transition-default;
+        &:hover {
+          background-color: var.$surface-light;
         }
       }
-      &:hover {
-        background-color: var.$surface-light;
+      th,
+      td {
+        display: table-cell;
+        padding: var.$spacer-4;
+        text-align: left;
+        border-bottom: 1px solid var.$border-color-light;
+        vertical-align: middle;
+        &::before {
+          display: none;
+        }
       }
-      td:first-child {
-        color: var.$text-primary;
-        font-weight: var.$font-weight-medium;
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      th {
+        background-color: var.$surface-light;
+        font-size: var.$font-size-sm;
+        font-weight: var.$font-weight-semibold;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var.$text-secondary;
       }
     }
 
     .badge {
       display: inline-block;
       padding: 5px 12px;
-      font-size: var.$font-size-sm; // Using your variables
+      font-size: var.$font-size-sm;
       font-weight: var.$font-weight-bold;
       border-radius: var.$border-radius-pill;
       text-transform: capitalize;
       line-height: 1.2;
     }
-
-    // Role badge styles removed as requested.
 
     .status-badge {
       @extend .badge;
@@ -112,20 +187,15 @@
         height: 8px;
         border-radius: 50%;
       }
-
       &.active {
         background-color: rgba(var.$success, 0.1);
         color: var.$success;
-        &::before {
-          background-color: var.$success;
-        }
+        &::before { background-color: var.$success; }
       }
       &.inactive {
         background-color: rgba(var.$danger, 0.1);
         color: var.$danger;
-        &::before {
-          background-color: var.$danger;
-        }
+        &::before { background-color: var.$danger; }
       }
     }
 
@@ -139,15 +209,20 @@
     }
   }
 
+  // --- MODAL STYLES ---
   .modal-overlay {
     position: fixed;
     inset: 0;
     background-color: rgba(#0f172a, 0.7);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: var.$z-index-modal-overlay;
-    padding: var.$spacer-4;
+    padding: var.$spacer-3;
     animation: fadeIn 200ms ease-out;
     @include mix.flex-center;
+    @include mix.screen-breakpoint(sm) {
+      padding: var.$spacer-4;
+    }
   }
 
   .modal-content {
@@ -162,11 +237,13 @@
   }
 
   .modal-header {
-    padding: var.$spacer-4 var.$spacer-5;
+    padding: var.$spacer-4;
     border-bottom: 1px solid var.$border-color-light;
     flex-shrink: 0;
     @include mix.flex-center($justify: space-between);
-
+    @include mix.screen-breakpoint(sm) {
+      padding: var.$spacer-4 var.$spacer-5;
+    }
     h2 {
       margin: 0;
       font-size: var.$font-size-lg;
@@ -179,25 +256,26 @@
   }
 
   .user-form {
-    padding: var.$spacer-5;
+    padding: var.$spacer-4;
     overflow-y: auto;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: var.$spacer-4;
+    @include mix.screen-breakpoint(sm) {
+      padding: var.$spacer-5;
+    }
   }
 
   .form-group {
     display: flex;
     flex-direction: column;
     gap: var.$spacer-2;
-
     label {
       font-weight: var.$font-weight-medium;
       color: var.$text-primary;
       font-size: var.$font-size-sm;
     }
-
     .form-control,
     .react-select-container .react-select__control {
       width: 100%;
@@ -208,7 +286,6 @@
       background-color: var.$surface-color;
       color: var.$text-primary;
       transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
-
       &:focus,
       &:focus-within {
         outline: none;
@@ -216,7 +293,6 @@
         box-shadow: var.$box-shadow-focus;
       }
     }
-
     .react-select-container .react-select__control {
       padding: 2px;
       min-height: 44px;
@@ -224,25 +300,19 @@
     .react-select-container .react-select__placeholder {
       color: var.$text-muted;
     }
-
     .react-datepicker-wrapper {
       width: 100%;
-      .form-control {
-        width: 100%;
-      }
+      .form-control { width: 100%; }
     }
-
     &.checkbox-group {
       flex-direction: row;
       align-items: center;
       gap: var.$spacer-3;
-
       input[type="checkbox"] {
         width: 1.15em;
         height: 1.15em;
         accent-color: var.$primary;
       }
-
       label {
         font-weight: var.$font-weight-regular;
         font-size: var.$font-size-base;
@@ -253,11 +323,14 @@
 
   .modal-actions {
     gap: var.$spacer-3;
-    padding: var.$spacer-4 var.$spacer-5;
+    padding: var.$spacer-4;
     border-top: 1px solid var.$border-color-light;
     background-color: var.$surface-light;
     flex-shrink: 0;
     @include mix.flex-center($justify: flex-end);
+    @include mix.screen-breakpoint(sm) {
+      padding: var.$spacer-4 var.$spacer-5;
+    }
   }
 
   .loading-indicator {
@@ -267,7 +340,6 @@
     padding: var.$spacer-6;
     color: var.$text-secondary;
     font-size: 1.1rem;
-
     .spinner-icon.large-spinner {
       font-size: 3rem;
       color: var.$primary;

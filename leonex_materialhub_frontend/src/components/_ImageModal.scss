@@ -1,136 +1,186 @@
-// src/components/_ImageModal.scss
-
 .image-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.85);
+  inset: 0;
+  background-color: rgba(10, 10, 20, 0.92);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1050;
-  backdrop-filter: blur(5px);
-  padding: 1rem; // Use smaller padding on mobile
-  animation: fadeIn 0.3s ease;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .image-modal-content {
   position: relative;
-  max-width: 95vw;
-  max-height: 95vh;
-  display: flex; // Use flex for centering the image if needed
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  touch-action: none; // Disables browser gestures like pull-to-refresh
+  padding: 80px; 
+  box-sizing: border-box;
 
   img {
-    display: block;
     max-width: 100%;
     max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
+    object-position: center center;
     border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    cursor: zoom-in;
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+
+    &.is-pannable { cursor: grab; }
+    &.is-panning {
+      cursor: grabbing;
+      transition: none;
+    }
   }
 }
 
-.modal-close-btn {
+// Top bar for counter and controls
+.modal-top-bar {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: rgba(10, 10, 10, 0.6);
-  color: white;
-  border: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+  z-index: 1052;
+  pointer-events: none;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-controls {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: all;
+}
+
+.modal-control-btn {
+  background: rgba(30, 30, 30, 0.7);
+  color: #e0e0e0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   width: 44px;
   height: 44px;
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  z-index: 1052;
+  transition: all 0.2s ease;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
 
   &:hover {
-    background: rgba(220, 53, 69, 0.9); // A strong red color on hover
+    background: rgba(10, 10, 10, 0.9);
+    color: #fff;
     transform: scale(1.1);
+  }
+
+  &.close:hover {
+    background: rgba(220, 53, 69, 0.8);
+    color: #fff;
   }
 }
 
-// <<< UPDATED STYLES FOR NAVIGATION BUTTONS >>>
+.modal-counter {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  background: rgba(30, 30, 30, 0.7);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: all;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+// Navigation buttons (Left/Right Chevrons)
 .modal-nav-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-
-  // Style properties for bigger, more accessible buttons
-  width: 60px;
-  height: 60px;
-  font-size: 2.5rem; // Larger icon
-
-  // Visuals and Interaction
-  background: rgba(30, 30, 30, 0.6); // Slightly more visible default state
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2); // Subtle border for definition
+  width: 50px;
+  height: 50px;
+  font-size: 1.8rem;
+  background: rgba(30, 30, 30, 0.5);
+  color: rgba(255, 255, 255, 0.8);
+  border: none;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; // Clean transition
+  transition: all 0.2s ease;
   z-index: 1051;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  
+  &.prev { left: 15px; }
+  &.next { right: 15px; }
 
-  // Position the buttons
-  &.prev {
-    left: 20px;
-  }
-
-  &.next {
-    right: 20px;
-  }
-
-  // New hover effect: No scaling, just a clean background and color change
   &:hover {
-    background: rgba(10, 10, 10, 0.85);
+    background: rgba(10, 10, 10, 0.8);
     color: white;
+    transform: translateY(-50%) scale(1.1);
   }
 }
 
-// Media query for smaller screens to reduce button size
+// Description bar at the bottom
+.modal-description-bottom-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 4rem 1.5rem 1.5rem 1.5rem;
+  color: #e0e0e0;
+  text-align: center;
+  pointer-events: none;
+  animation: slideUp 0.4s ease-out;
+
+  p {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    line-height: 1.5;
+    pointer-events: all;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+// Media queries for smaller devices
 @media (max-width: 768px) {
-  .image-modal-overlay {
-    padding: 0.5rem;
-  }
-
-  .modal-nav-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 2rem;
-
-    &.prev {
-      left: 10px;
-    }
-
-    &.next {
-      right: 10px;
-    }
-  }
-
-  .modal-close-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 1.3rem;
-  }
+  .image-modal-content { padding: 60px; }
+  .modal-top-bar { padding: 0.75rem 1rem; }
+  .modal-counter { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
+  .modal-control-btn { width: 40px; height: 40px; font-size: 1rem; }
+  .modal-nav-btn { width: 44px; height: 44px; font-size: 1.5rem; &.prev { left: 8px; } &.next { right: 8px; } }
+  .modal-description-bottom-bar { padding: 3rem 1rem 1rem 1rem; p { font-size: 0.95rem; } }
 }

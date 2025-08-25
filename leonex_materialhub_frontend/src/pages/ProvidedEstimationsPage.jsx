@@ -1,6 +1,5 @@
-// src/pages/ProvidedEstimationsPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { getMyProvidedEstimations } from "../services/api"; // This import now works correctly
+import { getMyProvidedEstimations } from "../services/api";
 import { toast } from "react-toastify";
 import {
   FaSearch,
@@ -49,7 +48,7 @@ const ProvidedEstimationsPage = () => {
         setCurrentPage(response.data.currentPage || 1);
 
         if ((response.data.data || []).length === 0 && !searchTerm.trim()) {
-          setError("You have not provided any estimations yet.");
+          setError("You have not provided any cost estimations yet.");
         } else if ((response.data.data || []).length === 0) {
           setError("No provided estimations found matching your search.");
         }
@@ -76,16 +75,12 @@ const ProvidedEstimationsPage = () => {
   }, [searchTerm, debouncedFetch]);
 
   useEffect(() => {
-    // We only want to refetch on these if the search term hasn't changed.
-    // The debounced fetch handles the search term changes.
-    const searchUnchanged = debouncedFetch.cancel;
-    if (searchUnchanged) {
-      fetchEstimations(currentPage);
+    if (!searchTerm) {
+        fetchEstimations(currentPage);
     }
-  }, [sortBy, sortOrder, currentPage, fetchEstimations]);
+  }, [sortBy, sortOrder, currentPage, fetchEstimations, searchTerm]);
 
   const handleEditEstimation = (estimation) => {
-    // Navigate to the inspection page to edit the estimation
     navigate(`/inspection/${estimation.submission_id}`);
   };
 
@@ -97,8 +92,8 @@ const ProvidedEstimationsPage = () => {
 
   const renderSortIcon = (columnName) => {
     const sortKeyMapping = {
-      "Mask Code": "material_code",
-      Plant: "plant",
+      // MODIFICATION: Changed "Mask Code" to "Material Code"
+      "Material Code": "material_code",
       "Last Updated On": "updated_at",
     };
     const sortKey = sortKeyMapping[columnName];
@@ -115,7 +110,7 @@ const ProvidedEstimationsPage = () => {
   return (
     <div className="container provided-estimations-page">
       <header className="page-header">
-        <h1>My Provided Estimations</h1>
+        <h1>My Completed Estimations</h1>
         <p className="page-subtitle">
           View and edit your previously submitted cost estimations.
         </p>
@@ -124,9 +119,10 @@ const ProvidedEstimationsPage = () => {
       <div className="controls-bar card-style">
         <div className="search-bar-status">
           <FaSearch className="search-icon" />
+          {/* MODIFICATION: Updated placeholder text */}
           <input
             type="text"
-            placeholder="Search by Mask Code, Description..."
+            placeholder="Search by Material Code, Description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input form-control"
@@ -150,15 +146,13 @@ const ProvidedEstimationsPage = () => {
         <>
           <div className="submissions-table-container card-style">
             <table className="submissions-table">
+              {/* === MODIFICATION IS HERE === */}
               <thead>
                 <tr>
                   <th onClick={() => handleSort("material_code")}>
-                    Mask Code {renderSortIcon("Mask Code")}
+                    Material Code {renderSortIcon("Material Code")}
                   </th>
                   <th>Description</th>
-                  <th onClick={() => handleSort("plant")}>
-                    Plant {renderSortIcon("Plant")}
-                  </th>
                   <th onClick={() => handleSort("updated_at")}>
                     Last Updated On {renderSortIcon("Last Updated On")}
                   </th>
@@ -170,9 +164,7 @@ const ProvidedEstimationsPage = () => {
                   <tr key={est.id}>
                     <td>{est.mask_code}</td>
                     <td>{est.material_description_snapshot}</td>
-                    <td>
-                      {est.plantlocation || "N/A"} ({est.plant})
-                    </td>
+                    {/* Plant column is removed */}
                     <td>{new Date(est.updated_at).toLocaleString()}</td>
                     <td>
                       <button
@@ -186,6 +178,7 @@ const ProvidedEstimationsPage = () => {
                   </tr>
                 ))}
               </tbody>
+              {/* === END MODIFICATION === */}
             </table>
           </div>
           <div className="pagination-controls">

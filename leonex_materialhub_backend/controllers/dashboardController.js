@@ -4,32 +4,21 @@ const pool = require("../config/db");
 exports.getStats = async (req, res) => {
   const { user } = req; // from authenticateToken middleware
 
-  // --- LOGIC FOR THIRD PARTIES ---
-  if (user.role === "thirdparties") {
+  // --- CASE 1: STANDARD THIRD-PARTY USERS ---
+  if (user.role === "thirdparties" && !['itc_user1', 'itc_user2'].includes(user.username)) {
     if (!user.plants || user.plants.length === 0) {
       return res.json({
-        totalCompletedSubmissions: 0,
-        estimationsProvided: 0,
-        pendingEstimations: 0,
-        assignedPlants: 0,
-        totalEstimatedValue: 0,
-        totalGoodMaterialValue: 0,
-        totalPackageDefectsValue: 0,
-        totalPhysicalDefectsValue: 0,
-        totalOtherDefectsValue: 0,
+        totalCompletedSubmissions: 0, estimationsProvided: 0, pendingEstimations: 0,
+        assignedPlants: 0, totalEstimatedValue: 0, totalGoodMaterialValue: 0,
+        totalPackageDefectsValue: 0, totalPhysicalDefectsValue: 0, totalOtherDefectsValue: 0,
         message: "You have not been assigned to any plants yet.",
       });
     }
 
     try {
       const plantCodes = user.plants.map((p) => p.plantcode);
-
-      const completedSubmissionsQuery = `SELECT COUNT(id) as count FROM material_data_submissions WHERE is_completed = TRUE AND plant IN (?);`;
+      const completedSubmissionsQuery = `SELECT COUNT(id) as count FROM material_data_submissions WHERE is_completed = TRUE AND approval_status = 'APPROVED' AND plant IN (?);`;
       const estimationsProvidedQuery = `SELECT COUNT(id) as count FROM cost_estimations WHERE user_id = ?;`;
-
-      // <<< THIS IS THE KEY QUERY THAT PERFORMS THE COUNT * PRICE CALCULATION >>>
-      // It joins submissions (for counts) and estimations (for prices)
-      // and calculates the total value for each category.
       const financialStatsQuery = `
         SELECT
             SUM(s.good_material_count * ce.good_material_price) as totalGoodMaterialValue,
@@ -38,41 +27,23 @@ exports.getStats = async (req, res) => {
             SUM(s.other_defects_count * ce.other_defects_price) as totalOtherDefectsValue
         FROM cost_estimations ce
         JOIN material_data_submissions s ON ce.submission_id = s.id
-        WHERE ce.user_id = ?;
-      `;
+        WHERE ce.user_id = ?;`;
 
-      const [
-        [completedSubmissionsResult],
-        [estimationsProvidedResult],
-        [financialStatsResult],
-      ] = await Promise.all([
+      const [[completedSubmissionsResult], [estimationsProvidedResult], [financialStatsResult]] = await Promise.all([
         pool.query(completedSubmissionsQuery, [plantCodes]),
         pool.query(estimationsProvidedQuery, [user.id]),
         pool.query(financialStatsQuery, [user.id]),
       ]);
 
-      const totalCompletedSubmissions =
-        completedSubmissionsResult[0]?.count ?? 0;
+      const totalCompletedSubmissions = completedSubmissionsResult[0]?.count ?? 0;
       const estimationsProvided = estimationsProvidedResult[0]?.count ?? 0;
-      const pendingEstimations =
-        totalCompletedSubmissions - estimationsProvided;
-
+      const pendingEstimations = totalCompletedSubmissions - estimationsProvided;
       const financials = financialStatsResult[0] || {};
-      const totalGoodMaterialValue =
-        parseFloat(financials.totalGoodMaterialValue) || 0;
-      const totalPackageDefectsValue =
-        parseFloat(financials.totalPackageDefectsValue) || 0;
-      const totalPhysicalDefectsValue =
-        parseFloat(financials.totalPhysicalDefectsValue) || 0;
-      const totalOtherDefectsValue =
-        parseFloat(financials.totalOtherDefectsValue) || 0;
-
-      // The total estimated value is the sum of all calculated category values
-      const totalEstimatedValue =
-        totalGoodMaterialValue +
-        totalPackageDefectsValue +
-        totalPhysicalDefectsValue +
-        totalOtherDefectsValue;
+      const totalGoodMaterialValue = parseFloat(financials.totalGoodMaterialValue) || 0;
+      const totalPackageDefectsValue = parseFloat(financials.totalPackageDefectsValue) || 0;
+      const totalPhysicalDefectsValue = parseFloat(financials.totalPhysicalDefectsValue) || 0;
+      const totalOtherDefectsValue = parseFloat(financials.totalOtherDefectsValue) || 0;
+      const totalEstimatedValue = totalGoodMaterialValue + totalPackageDefectsValue + totalPhysicalDefectsValue + totalOtherDefectsValue;
 
       return res.json({
         totalCompletedSubmissions,
@@ -87,87 +58,124 @@ exports.getStats = async (req, res) => {
       });
     } catch (error) {
       console.error("Third-party dashboard stats error:", error);
-      return res
-        .status(500)
-        .json({ message: "Server error fetching your dashboard statistics" });
+      return res.status(500).json({ message: "Server error fetching your dashboard statistics" });
     }
   }
-  // --- END OF THIRD PARTIES LOGIC ---
 
-  // --- QUERIES FOR ADMIN & CATALOGUER (Unchanged) ---
-  let materialsQuery = "SELECT COUNT(*) as count FROM materials";
-  let submissionsQuery =
-    "SELECT COUNT(DISTINCT material_code) as count FROM material_data_submissions WHERE is_completed = TRUE";
-  let recentMaterialsQuery =
-    "SELECT material_code, material_description, plantcode, plantlocation, category, stock_on_hand, created_at FROM materials ORDER BY created_at DESC LIMIT 5";
-  let plantsQuery =
-    "SELECT COUNT(DISTINCT plantlocation) as count FROM materials WHERE plantlocation IS NOT NULL AND plantlocation <> ''";
-  let categoriesQuery =
-    "SELECT COUNT(DISTINCT category) as count FROM materials WHERE category IS NOT NULL AND category <> ''";
-  let sohQuery = "SELECT SUM(stock_on_hand) as sum FROM materials";
-
-  let materialsParams = [];
-  let submissionsParams = [];
-
-  if (user.role === "cataloguer") {
+  // --- CASE 2 & 3: ADMIN, CATALOGUER, AND SPECIAL ITC USERS ---
+  // The logic for these is similar enough to be combined.
+  let plantFilterClauses = {
+      materials: "",
+      submissions: "",
+  };
+  let queryParams = [];
+  
+  // Use user's assigned plants for filtering if they are a cataloguer or a special ITC user
+  if (user.role === "cataloguer" || ['itc_user1', 'itc_user2'].includes(user.username)) {
     if (user.plants && user.plants.length > 0) {
       const plantCodes = user.plants.map((p) => p.plantcode);
-      materialsQuery += " WHERE plantcode IN (?)";
-      submissionsQuery += " AND plant IN (?)";
-      recentMaterialsQuery =
-        "SELECT material_code, material_description, plantcode, plantlocation, category, stock_on_hand, created_at FROM materials WHERE plantcode IN (?) ORDER BY created_at DESC LIMIT 5";
-      plantsQuery += " AND plantcode IN (?)";
-      categoriesQuery += " AND plantcode IN (?)";
-      sohQuery += " WHERE plantcode IN (?)";
-      materialsParams.push(plantCodes);
-      submissionsParams.push(plantCodes);
+      plantFilterClauses.materials = " WHERE plantcode IN (?)";
+      plantFilterClauses.submissions = " WHERE plant IN (?)";
+      queryParams.push(plantCodes);
     } else {
+       // Return zero for all stats if user has no plants assigned
       return res.json({
-        totalMasterMaterials: 0,
-        completedSubmissions: 0,
-        pendingVerifications: 0,
-        totalPlants: 0,
-        totalCategories: 0,
-        totalStockOnHand: 0,
-        recentlyAddedMasterMaterials: [],
+        totalMasterMaterials: 0, completedSubmissions: 0, pendingVerifications: 0,
+        totalPlants: 0, totalCategories: 0, totalStockOnHand: 0, recentlyAddedMasterMaterials: [],
+        approvedCount: 0, pendingCount: 0, reworkRequested: 0, reworkCompleted: 0,
+        thirdPartyReworks: 0, thirdPartyRejections: 0, statusDistribution: [],
+        userActivity: [], submissionsOverTime: [],
       });
     }
   }
 
-  try {
-    const [
-      [totalMasterMaterialsResult],
-      [completedSubmissionsResult],
-      [recentlyAddedMasterMaterialsResult],
-      [totalPlantsResult],
-      [totalCategoriesResult],
-      [totalStockOnHandResult],
-    ] = await Promise.all([
-      pool.query(materialsQuery, materialsParams),
-      pool.query(submissionsQuery, submissionsParams),
-      pool.query(recentMaterialsQuery, materialsParams),
-      pool.query(plantsQuery, materialsParams),
-      pool.query(categoriesQuery, materialsParams),
-      pool.query(sohQuery, materialsParams),
-    ]);
+  // --- Setup all queries ---
+  const materialsQuery = `SELECT COUNT(*) as count FROM materials ${plantFilterClauses.materials}`;
+  const recentMaterialsQuery = `SELECT material_code, material_description, plantcode, plantlocation, category, stock_on_hand, created_at FROM materials ${plantFilterClauses.materials} ORDER BY created_at DESC LIMIT 5`;
+  
+  // Submission queries use a slightly different where clause structure
+  const submissionBaseWhere = plantFilterClauses.submissions ? `${plantFilterClauses.submissions} AND is_completed = TRUE` : `WHERE is_completed = TRUE`;
 
-    const totalMasterMaterials = totalMasterMaterialsResult[0].count;
-    const completedSubmissions = completedSubmissionsResult[0].count;
-    const pendingVerifications = totalMasterMaterials - completedSubmissions;
+  const submissionsCountQuery = `SELECT COUNT(DISTINCT material_code) as count FROM material_data_submissions ${submissionBaseWhere}`;
+  const statusDistributionQuery = `SELECT COALESCE(approval_status, 'PENDING') as status, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} GROUP BY status`;
+  const userActivityQuery = `SELECT submitted_by_username as username, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} AND submitted_by_username IS NOT NULL GROUP BY submitted_by_username ORDER BY count DESC LIMIT 5`;
+  const submissionsOverTimeQuery = `SELECT DATE(created_at) as date, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC`;
+  
+  // Admin-only queries
+  const thirdPartyReworksQuery = `SELECT COUNT(id) as count FROM cost_estimations WHERE estimation_type = 'REWORK_REQUESTED'`;
+  const thirdPartyRejectionsQuery = `SELECT COUNT(id) as count FROM cost_estimations WHERE estimation_type = 'REJECTED'`;
+  const totalPlantsQuery = `SELECT COUNT(DISTINCT plantlocation) as count FROM materials WHERE plantlocation IS NOT NULL AND plantlocation <> '' ${plantFilterClauses.materials.replace('WHERE', 'AND')}`;
+  const totalCategoriesQuery = `SELECT COUNT(DISTINCT category) as count FROM materials WHERE category IS NOT NULL AND category <> '' ${plantFilterClauses.materials.replace('WHERE', 'AND')}`;
+  const totalSohQuery = `SELECT SUM(stock_on_hand) as sum FROM materials ${plantFilterClauses.materials}`;
+  
+  try {
+    const queriesToRun = [
+      pool.query(materialsQuery, queryParams),
+      pool.query(submissionsCountQuery, queryParams),
+      pool.query(recentMaterialsQuery, queryParams),
+      pool.query(statusDistributionQuery, queryParams),
+      pool.query(userActivityQuery, queryParams),
+      pool.query(submissionsOverTimeQuery, queryParams),
+      pool.query(totalPlantsQuery, queryParams),
+      pool.query(totalCategoriesQuery, queryParams),
+      pool.query(totalSohQuery, queryParams),
+    ];
+
+    if (user.role === 'admin') {
+      queriesToRun.push(pool.query(thirdPartyReworksQuery), pool.query(thirdPartyRejectionsQuery));
+    }
+    
+    const results = await Promise.all(queriesToRun);
+
+    const [[totalMasterMaterialsResult]] = results[0];
+    const [[completedSubmissionsResult]] = results[1];
+    const [recentlyAddedMasterMaterialsResult] = results[2];
+    const [statusDistributionResult] = results[3];
+    const [userActivityResult] = results[4];
+    const [submissionsOverTimeResult] = results[5];
+    const [[totalPlantsResult]] = results[6];
+    const [[totalCategoriesResult]] = results[7];
+    const [[totalSohResult]] = results[8];
+
+    let thirdPartyReworks = 0, thirdPartyRejections = 0;
+    if (user.role === 'admin') {
+      const [[tpReworks]] = results[9];
+      const [[tpRejections]] = results[10];
+      thirdPartyReworks = tpReworks.count;
+      thirdPartyRejections = tpRejections.count;
+    }
+
+    const statusCounts = { approvedCount: 0, reworkRequested: 0, reworkCompleted: 0, pendingCount: 0 };
+    statusDistributionResult.forEach(row => {
+      if (row.status === 'APPROVED') statusCounts.approvedCount = row.count;
+      else if (row.status === 'REWORK_REQUESTED') statusCounts.reworkRequested = row.count;
+      else if (row.status === 'REWORK_COMPLETED') statusCounts.reworkCompleted = row.count;
+      else if (row.status === 'PENDING') statusCounts.pendingCount = row.count;
+    });
+
+    const statusDistributionForChart = statusDistributionResult.map(item => ({ name: (item.status || 'Pending').replace(/_/g, ' '), value: item.count }));
+    const submissionsOverTime = submissionsOverTimeResult.map(item => ({ date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), count: item.count }));
 
     res.json({
-      totalMasterMaterials,
-      completedSubmissions,
-      pendingVerifications: pendingVerifications < 0 ? 0 : pendingVerifications,
-      totalPlants: totalPlantsResult[0].count,
-      totalCategories: totalCategoriesResult[0].count,
-      totalStockOnHand: totalStockOnHandResult[0].sum || 0,
+      totalMasterMaterials: totalMasterMaterialsResult.count,
+      completedSubmissions: completedSubmissionsResult.count,
+      pendingVerifications: totalMasterMaterialsResult.count - completedSubmissionsResult.count < 0 ? 0 : totalMasterMaterialsResult.count - completedSubmissionsResult.count,
+      totalPlants: totalPlantsResult.count,
+      totalCategories: totalCategoriesResult.count,
+      totalStockOnHand: totalSohResult.sum || 0,
+      approvedCount: statusCounts.approvedCount,
+      pendingCount: statusCounts.pendingCount,
+      reworkRequested: statusCounts.reworkRequested,
+      reworkCompleted: statusCounts.reworkCompleted,
+      thirdPartyReworks,
+      thirdPartyRejections,
+      statusDistribution: statusDistributionForChart,
+      userActivity: userActivityResult,
+      submissionsOverTime,
       recentlyAddedMasterMaterials: recentlyAddedMasterMaterialsResult,
     });
   } catch (error) {
-    console.error("Dashboard stats error (Admin/Cataloguer):", error);
-    res
-      .status(500)
-      .json({ message: "Server error fetching dashboard statistics" });
+    console.error("Dashboard stats error:", error);
+    res.status(500).json({ message: "Server error fetching dashboard statistics" });
   }
 };

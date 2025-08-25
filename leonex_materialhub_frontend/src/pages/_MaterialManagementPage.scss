@@ -1,4 +1,3 @@
-// src/pages/_MaterialManagementPage.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 @use "sass:color";
@@ -15,113 +14,215 @@
     gap: var.$spacer-4;
     align-items: flex-start;
 
-    @include mix.screen-breakpoint(md) {
-      flex-direction: row;
-      justify-content: space-between;
-      align-items: center;
+    .header-title h1 {
+      font-size: 1.6rem;
+      margin: 0;
+      line-height: 1.2;
     }
 
-    .header-title h1 {
-      font-size: 1.8rem;
-      margin: 0;
-    }
     .page-subtitle {
       font-size: var.$font-size-base;
       color: var.$text-secondary;
       margin-top: var.$spacer-1;
     }
-  }
 
-  .controls-bar {
-    // <<< FIX: Declaration moved before the @include.
-    padding: var.$spacer-4;
-    @include mix.card-style;
-
-    .search-bar {
-      display: flex;
-      align-items: center;
+    .btn {
       width: 100%;
-      background-color: var.$bg-color;
-      border-radius: var.$border-radius;
-      border: 1px solid var.$border-color;
-      &:focus-within {
-        border-color: var.$primary;
-        box-shadow: var.$box-shadow-focus;
+    }
+
+    @include mix.screen-breakpoint(md) {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+
+      .header-title h1 {
+        font-size: 1.8rem;
       }
-      .search-icon {
-        padding: 0 var.$spacer-3;
-        color: var.$text-muted;
-      }
-      .search-input {
-        border: none;
-        background: transparent;
-        padding: var.$spacer-3 0;
-        width: 100%;
-        font-size: var.$font-size-base;
-        &:focus {
-          outline: none;
-        }
+
+      .btn {
+        width: auto;
       }
     }
   }
 
+  // --- UPDATED SEARCH BAR ---
+  // .controls-bar removed because it was an empty ruleset
+
+  .search-bar {
+    position: relative;
+    width: 100%;
+    background-color: var.$surface-color;
+    border-radius: var.$border-radius-lg;
+    border: 1px solid var.$border-color;
+    box-shadow: var.$box-shadow-sm;
+    transition: all 150ms ease-in-out;
+    display: flex; // To contain the elements
+
+    &:focus-within {
+      border-color: var.$primary;
+      box-shadow: var.$box-shadow-focus;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: var.$spacer-4;
+      transform: translateY(-50%);
+      color: var.$text-muted;
+      pointer-events: none; // Allows clicking "through" the icon
+      z-index: 1;
+      font-size: 1.1em;
+    }
+
+    .search-input {
+      border: none;
+      background: transparent;
+      padding: var.$spacer-3 var.$spacer-4;
+      // Make space for the icon on the left
+      padding-left: calc(var.$spacer-4 + var.$spacer-4 + 1em);
+      width: 100%;
+      font-size: var.$font-size-base;
+      font-family: var.$font-family-sans;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  // --- DATA TABLE STYLES ---
   .materials-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    @include mix.card-style(0);
+    background-color: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+
+    @include mix.screen-breakpoint(md) {
+      @include mix.card-style(0);
+      overflow-x: auto;
+    }
   }
 
   .materials-table {
     width: 100%;
-    min-width: 800px;
     border-collapse: collapse;
 
-    th,
-    td {
-      padding: var.$spacer-3 var.$spacer-4;
-      text-align: left;
-      border-bottom: 1px solid var.$border-color-light;
-      white-space: nowrap;
-      font-size: var.$font-size-sm;
+    // --- MOBILE CARD VIEW (Default) ---
+    thead {
+      display: none;
     }
 
-    th {
-      background-color: var.$surface-light;
-      font-weight: var.$font-weight-semibold;
-      color: var.$text-secondary;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 150ms ease;
-      &:hover {
-        background-color: color.adjust(var.$surface-light, $lightness: -3%);
+    tbody {
+      display: flex;
+      flex-direction: column;
+      gap: var.$spacer-4;
+    }
+
+    tr {
+      display: block;
+      border: 1px solid var.$border-color;
+      @include mix.card-style;
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      padding: var.$spacer-3 var.$spacer-4;
+      text-align: right;
+      border-bottom: 1px solid var.$border-color-light;
+      white-space: normal;
+      font-size: var.$font-size-sm;
+      gap: var.$spacer-4;
+      align-items: flex-start;
+      overflow-wrap: break-word;
+      word-break: break-word;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &::before {
+        content: attr(data-label);
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+        text-align: left;
+        flex-shrink: 0;
       }
     }
 
-    tbody tr {
-      transition: background-color 150ms ease;
-      &:hover {
-        background-color: var.$primary-light;
+    // --- DESKTOP TABLE VIEW ---
+    @include mix.screen-breakpoint(md) {
+      min-width: 800px;
+
+      thead {
+        display: table-header-group;
+      }
+
+      tbody {
+        display: table-row-group;
+        gap: 0;
+      }
+
+      tr {
+        display: table-row;
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        transition: background-color 150ms ease;
+
+        &:hover {
+          background-color: var.$primary-light;
+        }
+      }
+
+      th,
+      td {
+        display: table-cell;
+        padding: var.$spacer-3 var.$spacer-4;
+        text-align: left;
+        border-bottom: 1px solid var.$border-color-light;
+        white-space: nowrap;
+        overflow-wrap: normal;
+        word-break: normal;
+        align-items: initial;
+        gap: 0;
+
+        &::before {
+          display: none;
+        }
+      }
+
+      th {
+        background-color: var.$surface-light;
+        font-weight: var.$font-weight-semibold;
+        color: var.$text-secondary;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        transition: background-color 150ms ease;
+        &:hover {
+          background-color: color.adjust(var.$surface-light, $lightness: -3%);
+        }
       }
     }
   }
 
   .pagination-controls {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: center;
-    gap: var.$spacer-3;
+    gap: var.$spacer-4;
     padding: var.$spacer-3 0;
-    width: 100%;
+
     @include mix.screen-breakpoint(md) {
       flex-direction: row;
       justify-content: space-between;
     }
-    .pagination-summary {
-      font-size: var.$font-size-sm;
-      color: var.$text-muted;
-    }
   }
 
+  // --- MODAL STYLES ---
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -141,66 +242,29 @@
     animation: slideInUp 300ms ease-out;
     @include mix.card-style(0);
 
-    .modal-header,
-    .modal-actions {
-      padding: var.$spacer-4;
-      flex-shrink: 0;
-    }
-    .modal-header {
-      border-bottom: 1px solid var.$border-color;
-      @include mix.flex-center(space-between, center);
-    }
-    .modal-actions {
-      gap: var.$spacer-3;
-      border-top: 1px solid var.$border-color;
-      background-color: var.$surface-light;
-      @include mix.flex-center(flex-end, center);
-    }
-
     .modal-body {
-      padding: var.$spacer-4 var.$spacer-5;
+      padding: var.$spacer-5;
       overflow-y: auto;
     }
 
-    .import-steps .step {
-      margin-bottom: var.$spacer-5;
-      h4 {
-        margin: 0 0 0.5rem;
-        color: var.$primary;
-      }
-      p {
-        margin: 0 0 0.75rem;
-        font-size: 0.9rem;
-        color: var.$text-secondary;
-        line-height: 1.5;
-      }
-    }
-
-    .preview-table-container {
-      margin-top: var.$spacer-5;
-      max-height: 250px;
-      overflow: auto;
-      border: 1px solid var.$border-color;
-      border-radius: var.$border-radius;
+    .modal-actions {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: var.$spacer-3;
+      padding: var.$spacer-4;
+      border-top: 1px solid var.$border-color;
       background-color: var.$surface-light;
+      flex-shrink: 0;
 
-      h4 {
-        padding: var.$spacer-3;
-        background-color: var.$surface-light;
-        border-bottom: 1px solid var.$border-color;
-        margin: 0;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        font-size: 1rem;
+      .btn {
+        width: 100%;
       }
 
-      table {
-        width: 100%;
-        font-size: var.$font-size-xs;
-        th,
-        td {
-          padding: 6px 10px;
+      @include mix.screen-breakpoint(sm) {
+        flex-direction: row;
+        justify-content: flex-end;
+        .btn {
+          width: auto;
         }
       }
     }

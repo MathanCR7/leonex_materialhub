@@ -1,36 +1,42 @@
-// src/components/_Sidebar.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 
+// --- MOBILE FIRST BASE STYLES ---
 .sidebar {
-  width: var.$sidebar-width-expanded;
   position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
+  // Use a responsive width for mobile, capped at 300px
+  width: min(85vw, 300px);
   background-color: var.$sidebar-bg;
   color: var.$sidebar-text;
   display: flex;
   flex-direction: column;
   z-index: var.$z-index-sidebar;
-  transition: width var.$transition-duration var.$transition-easing,
-    transform var.$transition-duration var.$transition-easing;
 
-  // Mobile: Hidden off-screen by default
+  // Initially hidden off-screen for mobile
   transform: translateX(-100%);
-  box-shadow: var.$box-shadow-lg;
+  // A more subtle, modern shadow for the mobile drawer
+  box-shadow: 4px 0px 20px rgba(0, 0, 0, 0.2);
+  transition: transform var.$transition-duration var.$transition-easing;
 
-  // Mobile: Slide in when open
+  // When mobile menu is open
   &.is-open {
     transform: translateX(0);
   }
 
-  // Desktop: Always visible on screen
+  // --- DESKTOP STYLES (md breakpoint and up) ---
   @include mix.screen-breakpoint(md) {
+    // On desktop, it's always visible and has a fixed width
+    width: var.$sidebar-width-expanded;
     transform: translateX(0);
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    // Smooth width transition for collapse/expand
+    transition: width var.$transition-duration var.$transition-easing;
   }
 
+  // --- COLLAPSED STATE (Desktop only) ---
   &.is-collapsed {
     @include mix.screen-breakpoint(md) {
       width: var.$sidebar-width-collapsed;
@@ -41,6 +47,7 @@
         opacity: 0;
         visibility: hidden;
         width: 0;
+        // Faster transition for disappearing text
         transition: opacity 150ms ease, visibility 0s 150ms, width 150ms ease;
       }
 
@@ -57,6 +64,7 @@
   }
 }
 
+// --- HEADER SECTION ---
 .sidebar-header {
   @include mix.flex-center(flex-start);
   padding: 0 var.$spacer-4;
@@ -86,10 +94,113 @@
   }
 }
 
+// --- NAVIGATION SECTION ---
+.sidebar-nav {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var.$spacer-3 0; // Slightly more vertical padding
+  ul {
+    list-style: none;
+  }
+  li a {
+    @include mix.flex-center(flex-start);
+    height: 48px;
+    padding: 0 var.$spacer-4;
+    // Use slightly less horizontal margin for more clickable area
+    margin: var.$spacer-1 var.$spacer-2;
+    color: var.$sidebar-text;
+    text-decoration: none;
+    border-radius: var.$border-radius;
+    font-size: var.$font-size-base;
+    font-weight: var.$font-weight-regular;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    transition: color 150ms ease-in-out, background-color 150ms ease-in-out;
+
+    .nav-icon {
+      @include mix.flex-center;
+      font-size: 1.2rem;
+      width: 32px;
+      min-width: 32px;
+      margin-right: var.$spacer-3;
+      transition: transform 150ms ease;
+    }
+    .nav-text {
+      transition: opacity 150ms ease;
+      // Ensure nav text container fills the space for the badge
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    &:hover {
+      background-color: var.$sidebar-link-hover-bg;
+      color: var.$sidebar-text-hover;
+      .nav-icon {
+        transform: scale(1.1);
+      }
+    }
+
+    &.active-link {
+      background-color: var.$sidebar-active-bg;
+      color: var.$sidebar-active-text;
+      font-weight: var.$font-weight-medium;
+      &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        height: 70%; // Slightly taller indicator
+        width: 4px;
+        background-color: var.$sidebar-active-indicator;
+        border-radius: 0 var.$border-radius-sm var.$border-radius-sm 0;
+      }
+    }
+  }
+}
+
+// --- COUNT BADGE STYLING (Unchanged from original) ---
+.sidebar-count-badge {
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 50px;
+  padding: 3px 8px;
+  margin-left: 8px;
+  min-width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease-in-out, background-color 0.2s ease;
+
+  .active-link &,
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  background-color: #e53935; // Default Red
+
+  &--red { background-color: #e53935; }
+  &--green { background-color: #43a047; }
+  &--yellow {
+    background-color: #fdd835;
+    color: #212529;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+// --- DESKTOP TOGGLE BUTTON ---
 .sidebar-toggle {
-  display: none; // Hidden by default (on mobile)
+  display: none; // Hidden on mobile
   @include mix.screen-breakpoint(md) {
     @include mix.flex-center;
+    display: flex; // Visible on desktop
     background-color: var.$sidebar-bg;
     color: var.$sidebar-text;
     border: 1px solid var.$sidebar-border;
@@ -120,68 +231,7 @@
   }
 }
 
-.sidebar-nav {
-  flex-grow: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var.$spacer-2 0;
-  ul {
-    list-style: none;
-  }
-  li a {
-    @include mix.flex-center(flex-start);
-    height: 48px;
-    padding: 0 var.$spacer-4;
-    margin: var.$spacer-1 var.$spacer-3;
-    color: var.$sidebar-text;
-    text-decoration: none;
-    border-radius: var.$border-radius;
-    font-size: var.$font-size-base;
-    font-weight: var.$font-weight-regular;
-    white-space: nowrap;
-    position: relative;
-    overflow: hidden;
-    transition: color 150ms ease-in-out, background-color 150ms ease-in-out;
-
-    .nav-icon {
-      @include mix.flex-center;
-      font-size: 1.2rem;
-      width: 32px;
-      min-width: 32px;
-      margin-right: var.$spacer-3;
-      transition: transform 150ms ease;
-    }
-    .nav-text {
-      transition: opacity 150ms ease;
-    }
-
-    &:hover {
-      background-color: var.$sidebar-link-hover-bg;
-      color: var.$sidebar-text-hover;
-      .nav-icon {
-        transform: scale(1.1);
-      }
-    }
-
-    &.active-link {
-      background-color: var.$sidebar-active-bg;
-      color: var.$sidebar-active-text;
-      font-weight: var.$font-weight-medium;
-      &::before {
-        content: "";
-        position: absolute;
-        left: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        height: 60%;
-        width: 4px;
-        background-color: var.$sidebar-active-indicator;
-        border-radius: 0 var.$border-radius-sm var.$border-radius-sm 0;
-      }
-    }
-  }
-}
-
+// --- FOOTER SECTION ---
 .sidebar-footer {
   padding: var.$spacer-3 var.$spacer-4;
   border-top: 1px solid var.$sidebar-border;
@@ -235,14 +285,25 @@
   }
 }
 
+// --- MOBILE OVERLAY ---
 .sidebar-overlay {
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: var.$z-index-sidebar - 1;
-  animation: fadeIn 300ms;
+  // Add a blur effect for a modern look
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  // Animate the appearance
+  animation: fadeIn 300ms ease-out;
 
   @include mix.screen-breakpoint(md) {
+    // Overlay is not needed on desktop
     display: none;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

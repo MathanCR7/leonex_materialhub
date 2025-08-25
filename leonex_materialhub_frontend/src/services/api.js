@@ -37,10 +37,11 @@ export const getMaterialMasterDetails = (
   if (!plantCode) {
     return Promise.reject(new Error("Plant code is required."));
   }
+  // MODIFICATION: materialCode is now a query parameter
   return apiClient.get(
-    `/materials/master/${encodeURIComponent(
+    `/materials/master/details?materialCode=${encodeURIComponent(
       materialCode
-    )}/details?plantCode=${encodeURIComponent(plantCode)}`,
+    )}&plantCode=${encodeURIComponent(plantCode)}`,
     options
   );
 };
@@ -101,6 +102,29 @@ export const getMyProvidedEstimations = (params) =>
 export const getMyEstimationForSubmission = (submissionId) =>
   apiClient.get(`/estimations/my-estimation/${submissionId}`);
 
+
+
+// <<< MODIFICATION: getMyActions is replaced by two new functions >>>
+// Fetches the list for the "My Reworks" page
+export const getMyReworks = (params) =>
+  apiClient.get("/estimations/my-reworks", { params });
+
+// Fetches the list for the "My Rejections" page
+export const getMyRejections = (params) =>
+  apiClient.get("/estimations/my-rejections", { params });
+// <<< END MODIFICATION >>>
+
+
+
+
+
+// ==========================================================================
+export const getAdminAllReworks = (params) => apiClient.get('/users/reports/reworks', { params });
+export const getAdminAllRejections = (params) => apiClient.get('/users/reports/rejections', { params });
+export const getThirdPartyUsers = () => apiClient.get('/users/third-parties/list');
+
+
+
 // --- NEW Material Management API functions ---
 export const getManagedMaterials = (params) =>
   apiClient.get("/materials/manage", { params });
@@ -115,12 +139,42 @@ export const importMaterials = (formData) =>
     },
   });
 
-// <<< ADD NEW REPORTING API FUNCTIONS >>>
-export const getCostSummaryReport = () =>
-  apiClient.get("/reports/cost-summary");
 
-export const getCostDetailReportForUser = (userId) =>
-  apiClient.get(`/reports/cost-details/${userId}`);
-// <<< END OF NEW FUNCTIONS >>>
+
+  
+
+// --- REPORTING API FUNCTIONS ---
+export const getCostSummaryReport = (options = {}) =>
+  apiClient.get("/reports/cost-summary", options);
+
+export const getCostDetailReportForUser = (userId, options = {}) =>
+  apiClient.get(`/reports/cost-details/${userId}`, options);
+
+
+// DEFINITIVE FIX: Added the missing export for the plant dropdown.
+export const getUniquePlantsForReport = () => 
+  apiClient.get("/reports/unique-plants");
+
+
+// --- NEW STOCK REPORT API FUNCTIONS ---
+export const getStockReport = (params) =>
+  apiClient.get("/stock-report", { params });
+  
+export const getUniqueSubmittersForReport = () =>
+  apiClient.get("/stock-report/unique-submitters");
+// --- END NEW STOCK REPORT FUNCTIONS ---
+
+
+
+
+// --- NEW WORKFLOW API FUNCTIONS START ---
+export const getAssignedReworks = (params) =>
+  apiClient.get("/material-data/reworks/assigned", { params });
+
+export const updateSubmissionStatus = (submissionId, data) =>
+  apiClient.put(`/material-data/status/${submissionId}`, data);
+// --- NEW WORKFLOW API FUNCTIONS END ---
+
+
 
 export default apiClient;

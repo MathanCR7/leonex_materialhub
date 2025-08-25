@@ -11,7 +11,7 @@ router.use(authenticateToken);
 router.get("/search", masterMaterialController.searchMasterMaterials);
 
 router.get(
-  "/:materialCode/details",
+  "/details",
   masterMaterialController.getMasterMaterialDetails
 );
 

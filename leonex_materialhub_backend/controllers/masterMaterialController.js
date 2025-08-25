@@ -81,11 +81,14 @@ exports.searchMasterMaterials = async (req, res) => {
 };
 
 exports.getMasterMaterialDetails = async (req, res) => {
-  const { materialCode } = req.params;
-  const { plantCode } = req.query;
+  // MODIFICATION: Read materialCode from req.query instead of req.params
+  const { materialCode, plantCode } = req.query;
   const { user } = req;
+
   if (!plantCode)
     return res.status(400).json({ message: "Plant code is required." });
+  if (!materialCode)
+    return res.status(400).json({ message: "Material code is required." });
 
   const hasAccessToPlant =
     user.role === "admin" ||

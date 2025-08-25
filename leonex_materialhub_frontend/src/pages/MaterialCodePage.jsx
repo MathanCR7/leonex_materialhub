@@ -78,7 +78,7 @@ const MaterialCodePage = () => {
       return;
     }
     navigate(
-      `/material-form/${material.material_code}?plantCode=${
+      `/material-form/${encodeURIComponent(material.material_code)}?plantCode=${
         material.plantcode
       }&plantlocation=${encodeURIComponent(material.plantlocation)}`,
       {

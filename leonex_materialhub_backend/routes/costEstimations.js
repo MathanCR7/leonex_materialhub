@@ -1,45 +1,30 @@
-// routes/costEstimations.js
 const express = require("express");
 const router = express.Router();
 const costEstimationController = require("../controllers/costEstimationController");
 const authenticateToken = require("../middleware/authenticateToken");
-const {
-  isThirdParty,
-  canAccessEstimations,
-} = require("../middleware/authorization");
+const { isThirdParty, canAccessEstimations } = require("../middleware/authorization");
 
-// All routes in this file require an authenticated user
+// All routes in this file are protected
 router.use(authenticateToken);
 
-// A third-party user gets a list of THEIR OWN provided estimations.
-// This must come before the /:submissionId routes to be matched correctly.
-router.get(
-  "/my-estimations",
-  isThirdParty,
-  costEstimationController.getEstimationsForCurrentUser
-);
+// Route for the "My Completed Estimations" page
+router.get("/my-estimations", isThirdParty, costEstimationController.getEstimationsForCurrentUser);
 
-// <<< NEW ROUTE FOR EDITING >>>
-// Get the current user's specific estimation for a single submission (to populate an edit form).
-// Must also come before the generic /:submissionId route.
-router.get(
-  "/my-estimation/:submissionId",
-  isThirdParty,
-  costEstimationController.getMyEstimationForSubmission
-);
+// --- MODIFICATION: Pointing to the two new controller functions ---
+// NEW: Route for the "My Reworks" page
+router.get("/my-reworks", isThirdParty, costEstimationController.getReworksForCurrentUser);
 
-// A third-party user submits or updates their estimation for a given submission.
-router.post(
-  "/:submissionId",
-  isThirdParty,
-  costEstimationController.submitEstimation
-);
+// NEW: Route for the "My Rejections" page
+router.get("/my-rejections", isThirdParty, costEstimationController.getRejectionsForCurrentUser);
+// --- END MODIFICATION ---
 
-// An admin or a third-party user can get estimation data for a submission.
-router.get(
-  "/:submissionId",
-  canAccessEstimations,
-  costEstimationController.getEstimationsForSubmission
-);
+// Route to get a single decision for the inspection page form
+router.get("/my-estimation/:submissionId", isThirdParty, costEstimationController.getMyEstimationForSubmission);
+
+// Route to submit any decision (estimation, rework, or rejection)
+router.post("/:submissionId", isThirdParty, costEstimationController.submitEstimation);
+
+// Route for admins to see all estimations for a submission
+router.get("/:submissionId", canAccessEstimations, costEstimationController.getEstimationsForSubmission);
 
 module.exports = router;

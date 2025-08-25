@@ -6,7 +6,7 @@ import { loginUser } from "../services/api";
 import { toast } from "react-toastify";
 import { FaSpinner } from "react-icons/fa";
 // --- Corrected: Import the PNG file directly ---
-import leonexLogo from "../assets/leonex_logo.png";
+import leonexLogo from "../assets/company_logo.png";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");

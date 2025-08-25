@@ -1,4 +1,3 @@
-// src/pages/SubmissionsForEstimationPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { getCompletedSubmissions } from "../services/api";
 import { toast } from "react-toastify";
@@ -40,11 +39,10 @@ const SubmissionsForEstimationPage = () => {
           sortOrder,
           page: pageToFetch,
           limit: itemsPerPage,
-          estimationStatus: "pending", // <<< CHANGE: Send status to backend
+          estimationStatus: "pending", // Backend filters submissions user hasn't touched yet
         };
         const response = await getCompletedSubmissions(params);
-
-        // <<< CHANGE: No more client-side filtering needed
+        
         setSubmissions(response.data.data || []);
         setTotalItems(response.data.totalItems);
         setTotalPages(response.data.totalPages);
@@ -52,7 +50,7 @@ const SubmissionsForEstimationPage = () => {
 
         if ((response.data.data || []).length === 0) {
           setError(
-            "No submissions are currently pending your estimation. Check the 'My Provided Estimations' page for your completed work."
+            "No submissions are currently pending your estimation. Check the other pages for your completed work."
           );
         }
       } catch (err) {
@@ -78,8 +76,10 @@ const SubmissionsForEstimationPage = () => {
   }, [searchTerm, debouncedFetch]);
 
   useEffect(() => {
-    fetchSubmissions(currentPage);
-  }, [sortBy, sortOrder, currentPage, fetchSubmissions]);
+    if (!searchTerm) {
+        fetchSubmissions(currentPage);
+    }
+  }, [sortBy, sortOrder, currentPage, fetchSubmissions, searchTerm]);
 
   const handleProvideEstimation = (submission, index) => {
     const submissionIds = submissions.map((s) => s.id);
@@ -95,8 +95,12 @@ const SubmissionsForEstimationPage = () => {
   };
 
   const renderSortIcon = (columnName) => {
-    const sortKey =
-      columnName === "Mask Code" ? "material_code" : columnName.toLowerCase();
+    const sortKeyMapping = {
+        // MODIFICATION: Changed "Mask Code" to "Material Code"
+        "Material Code": "material_code",
+        "Completed On": "created_at",
+    };
+    const sortKey = sortKeyMapping[columnName] || columnName.toLowerCase();
     if (sortBy === sortKey) {
       return sortOrder === "ASC" ? <FaSortAmountUp /> : <FaSortAmountDown />;
     }
@@ -108,15 +112,16 @@ const SubmissionsForEstimationPage = () => {
       <header className="page-header">
         <h1>Provide Estimations</h1>
         <p className="page-subtitle">
-          View submissions awaiting your cost estimation.
+          View submissions awaiting your cost estimation, rework request, or rejection.
         </p>
       </header>
       <div className="controls-bar card-style">
         <div className="search-bar-status">
           <FaSearch className="search-icon" />
+          {/* MODIFICATION: Updated placeholder text */}
           <input
             type="text"
-            placeholder="Search by Mask Code, Description, Plant..."
+            placeholder="Search by Material Code, Description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input form-control"
@@ -138,17 +143,15 @@ const SubmissionsForEstimationPage = () => {
         <>
           <div className="submissions-table-container card-style">
             <table className="submissions-table">
+              {/* === MODIFICATION IS HERE === */}
               <thead>
                 <tr>
                   <th onClick={() => handleSort("material_code")}>
-                    Mask Code {renderSortIcon("Mask Code")}
+                    Material Code {renderSortIcon("Material Code")}
                   </th>
                   <th>Description</th>
-                  <th onClick={() => handleSort("plant")}>
-                    Plant {renderSortIcon("plant")}
-                  </th>
                   <th onClick={() => handleSort("created_at")}>
-                    Completed On {renderSortIcon("created_at")}
+                    Completed On {renderSortIcon("Completed On")}
                   </th>
                   <th>Actions</th>
                 </tr>
@@ -158,22 +161,21 @@ const SubmissionsForEstimationPage = () => {
                   <tr key={sub.id}>
                     <td>{sub.material_code}</td>
                     <td>{sub.material_description_snapshot}</td>
-                    <td>
-                      {sub.plantlocation || "N/A"} ({sub.plant})
-                    </td>
+                    {/* Plant column is removed */}
                     <td>{new Date(sub.created_at).toLocaleString()}</td>
                     <td>
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => handleProvideEstimation(sub, index)}
-                        title="Inspect and Provide Cost Estimation"
+                        title="Inspect and Provide Decision"
                       >
-                        <FaEye /> Inspect & Estimate
+                        <FaEye /> Inspect & Decide
                       </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
+              {/* === END MODIFICATION === */}
             </table>
           </div>
           <div className="pagination-controls">

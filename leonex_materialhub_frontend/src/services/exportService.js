@@ -1027,3 +1027,4 @@ export const downloadWord = async (docxDocument, filename) => {
   const blob = await Packer.toBlob(docxDocument);
   saveAs(blob, `${filename}.docx`);
 };
+

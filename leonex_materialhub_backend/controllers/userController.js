@@ -209,3 +209,101 @@ exports.updateUser = async (req, res) => {
     if (connection) connection.release();
   }
 };
+
+exports.getThirdPartyUsers = async (req, res) => {
+  try {
+    const [users] = await pool.query(
+      "SELECT id, username FROM users WHERE role = 'thirdparties' ORDER BY username ASC"
+    );
+    res.json(users);
+  } catch (error) {
+    console.error("Get third party users error:", error);
+    res.status(500).json({ message: "Server error fetching third-party users." });
+  }
+};
+
+// Helper function to build a base query for reworks/rejections
+const buildAdminQuery = (type) => {
+    const fields = type === 'rework' ? 'ce.rework_reason, ce.rework_status' : 'ce.rejection_reason';
+    const estimationType = type === 'rework' ? 'REWORK_REQUESTED' : 'REJECTED';
+    const base = `
+        FROM cost_estimations ce
+        JOIN material_data_submissions s ON ce.submission_id = s.id
+        JOIN materials m ON s.material_code = m.material_code AND s.plant = m.plantcode
+        JOIN users u ON ce.user_id = u.id
+        WHERE ce.estimation_type = ?
+    `;
+    const select = `SELECT ce.id, ce.submission_id, ce.updated_at, s.material_description_snapshot, m.mask_code, m.plantlocation, u.username as third_party_username, ${fields}`;
+    const count = `SELECT COUNT(ce.id) as total`;
+    return {
+        baseQuery: select + base,
+        countQuery: count + base,
+        queryParams: [estimationType],
+    };
+};
+
+const getPaginatedData = async (req, res, type) => {
+    const { search = "", page = 1, limit = 10, userId } = req.query;
+    const offsetInt = (Math.max(1, parseInt(page, 10)) - 1) * Math.max(1, parseInt(limit, 10));
+    const limitInt = Math.max(1, parseInt(limit, 10));
+    let { baseQuery, countQuery, queryParams } = buildAdminQuery(type);
+    let countQueryParams = [...queryParams];
+    if (userId) {
+        baseQuery += ' AND ce.user_id = ?';
+        countQuery += ' AND ce.user_id = ?';
+        queryParams.push(userId);
+        countQueryParams.push(userId);
+    }
+    if (search) {
+        baseQuery += ' AND (m.mask_code LIKE ? OR s.material_description_snapshot LIKE ? OR u.username LIKE ?)';
+        countQuery += ' AND (m.mask_code LIKE ? OR s.material_description_snapshot LIKE ? OR u.username LIKE ?)';
+        const searchParam = `%${search}%`;
+        queryParams.push(searchParam, searchParam, searchParam);
+        countQueryParams.push(searchParam, searchParam, searchParam);
+    }
+    baseQuery += ` ORDER BY ce.updated_at DESC LIMIT ? OFFSET ?`;
+    queryParams.push(limitInt, offsetInt);
+    try {
+        const [rows] = await pool.query(baseQuery, queryParams);
+        const [countResult] = await pool.query(countQuery, countQueryParams);
+        const totalItems = countResult[0].total;
+        res.json({ data: rows, currentPage: parseInt(page, 10), totalPages: Math.ceil(totalItems / limitInt), totalItems });
+    } catch (error) {
+        console.error(`Get all ${type}s error:`, error);
+        res.status(500).json({ message: `Server error fetching all ${type}s.` });
+    }
+};
+
+exports.getAllReworks = (req, res) => getPaginatedData(req, res, 'rework');
+exports.getAllRejections = (req, res) => getPaginatedData(req, res, 'rejection');
+
+const exportData = async (req, res, type) => {
+    const { userId } = req.query;
+    let { baseQuery, queryParams } = buildAdminQuery(type);
+    if (userId) {
+        baseQuery += ' AND ce.user_id = ?';
+        queryParams.push(userId);
+    }
+    baseQuery += ` ORDER BY ce.updated_at DESC`;
+    try {
+        const [rows] = await pool.query(baseQuery, queryParams);
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(type === 'rework' ? 'Reworks' : 'Rejections');
+        if (type === 'rework') {
+            worksheet.columns = [ { header: 'Mask Code', key: 'mask_code', width: 20 }, { header: 'Third-Party User', key: 'third_party_username', width: 25 }, { header: 'Description', key: 'material_description_snapshot', width: 40 }, { header: 'Plant', key: 'plantlocation', width: 30 }, { header: 'Rework Reason', key: 'rework_reason', width: 50 }, { header: 'Status', key: 'rework_status', width: 20 }, { header: 'Date Requested', key: 'updated_at', width: 25 } ];
+        } else {
+            worksheet.columns = [ { header: 'Mask Code', key: 'mask_code', width: 20 }, { header: 'Third-Party User', key: 'third_party_username', width: 25 }, { header: 'Description', key: 'material_description_snapshot', width: 40 }, { header: 'Plant', key: 'plantlocation', width: 30 }, { header: 'Rejection Reason', key: 'rejection_reason', width: 50 }, { header: 'Date Rejected', key: 'updated_at', width: 25 } ];
+        }
+        rows.forEach(row => { worksheet.addRow({ ...row, updated_at: new Date(row.updated_at).toLocaleString() }); });
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${type}s_report_${new Date().toISOString().split('T')[0]}.xlsx"`);
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (error) {
+        console.error(`Export ${type}s error:`, error);
+        res.status(500).json({ message: `Server error exporting ${type}s.` });
+    }
+};
+
+exports.exportReworks = (req, res) => exportData(req, res, 'rework');
+exports.exportRejections = (req, res) => exportData(req, res, 'rejection');
