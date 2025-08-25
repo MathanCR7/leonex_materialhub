@@ -1,0 +1,17 @@
+{
+  "builds": [
+    {
+      "src": "leonex_materialhub_frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/leonex_materialhub_frontend/$1"
+    }
+  ]
+}
