@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 
 // Import both components
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
 createRoot(document.getElementById("root")).render(
