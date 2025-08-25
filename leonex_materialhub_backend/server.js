@@ -30,10 +30,6 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 // --- Security and Core Middlewares ---
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// =================================================================
-// CRITICAL FIX #1: CORRECT CORS CONFIGURATION FOR VERCEL
-// This explicitly allows your frontend to talk to your backend.
-// =================================================================
 const allowedOrigins = [
   'https://leonex-materialhubfrontend.vercel.app', // Your Vercel frontend URL
   'http://localhost:5173' // Your local development URL
@@ -52,7 +48,6 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
-// =================================================================
 
 app.use((req, res, next) => {
   req.id = uuidv4();
@@ -66,14 +61,12 @@ app.use(morgan(morganFormat, { stream: logger.stream }));
 app.use(express.json({ limit: "70mb" }));
 app.use(express.urlencoded({ extended: true, limit: "70mb" }));
 
-// --- Static File Serving ---
-const mediaDir = path.join("/tmp", "media"); // Use /tmp for Vercel's writable directory
+const mediaDir = path.join("/tmp", "media");
 if (!fs.existsSync(mediaDir)) {
   fs.mkdirSync(mediaDir, { recursive: true });
 }
 app.use("/media", express.static(mediaDir));
 
-// --- Rate Limiting (Applied only to API routes) ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -97,15 +90,13 @@ app.use("/api/stock-report", stockReportRoutes);
 app.get("/", (req, res) => res.status(200).json({ message: "Backend is running." }));
 app.get("/api/health", (req, res) => res.status(200).json({ status: "UP" }));
 
-// --- Scheduled Jobs ---
 cron.schedule("0 0 * * *", () => {
-  // Cron jobs may not work as expected on Vercel's Hobby plan.
-  // See Vercel's documentation on Cron Jobs for production setup.
   deactivateExpiredUsers();
 });
 
 // --- Error Handling ---
 app.use((req, res, next) => {
+  // SYNTAX FIX: Added backticks
   const error = new Error(`Not Found - ${req.originalUrl}`);
   error.status = 404;
   next(error);
@@ -113,12 +104,9 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
+  // SYNTAX FIX: Added backticks
   logger.error(`${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
   res.status(statusCode).json({ message: err.message || "Server error." });
 });
 
-// =================================================================
-// CRITICAL FIX #2: VERCEL COMPATIBILITY
-// We no longer listen on a port. We export the app for Vercel to use.
-// =================================================================
 module.exports = app;
