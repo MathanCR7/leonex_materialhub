@@ -2,28 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "leonex_materialhub_backend/server.js",
+      "src": "/leonex_materialhub_backend/server.js",
       "use": "@vercel/node"
     },
     {
-      "src": "leonex_materialhub_frontend/package.json",
+      "src": "/leonex_materialhub_frontend/package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "config": { "distDir": "dist" }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/leonex_materialhub_backend/server.js"
+      "source": "/api/(.*)",
+      "destination": "/leonex_materialhub_backend/server.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/leonex_materialhub_frontend/dist/index.html"
+      "source": "/(.*)",
+      "destination": "/leonex_materialhub_frontend/dist/index.html"
     }
   ]
 }
