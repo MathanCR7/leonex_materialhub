@@ -11,17 +11,14 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/leonex_materialhub_backend/server.js"
+      "source": "/api/(.*)",
+      "destination": "/leonex_materialhub_backend/server.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/leonex_materialhub_frontend/dist/index.html"
+      "source": "/(.*)",
+      "destination": "/leonex_materialhub_frontend/dist/index.html"
     }
   ]
 }
