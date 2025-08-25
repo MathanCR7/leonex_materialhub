@@ -28,14 +28,10 @@
     "morgan": "^1.10.0",
     "multer": "^2.0.1",
     "mysql2": "^3.14.1",
-<<<<<<< HEAD
     "node-cron": "^4.1.1",
     "recharts": "^3.0.2",
     "uuid": "^11.1.0",
     "winston": "^3.17.0"
-=======
-    "node-cron": "^4.1.1"
->>>>>>> 5d02a32c30fdcd54ef50e89a32caea3649b7b442
   },
   "devDependencies": {
     "@babel/cli": "^7.27.2",
