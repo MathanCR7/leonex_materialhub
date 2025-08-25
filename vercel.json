@@ -16,15 +16,14 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "leonex_materialhub_backend/server.js"
+      "dest": "/leonex_materialhub_backend/server.js"
     },
-     {
-    "handle": "filesystem" 
-  },
-
+    {
+      "handle": "filesystem"
+    },
     {
       "src": "/(.*)",
-      "dest": "leonex_materialhub_frontend/dist/index.html"
+      "dest": "/leonex_materialhub_frontend/dist/index.html"
     }
   ]
 }
