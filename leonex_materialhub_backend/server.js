@@ -1,4 +1,4 @@
-// server.js
+// leonex_materialhub_backend/server.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -30,6 +30,10 @@ const NODE_ENV = process.env.NODE_ENV || "development";
 // --- Security and Core Middlewares ---
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
+// =================================================================
+// CRITICAL #1: CORRECT CORS CONFIGURATION
+// This allows your frontend to make requests to this backend.
+// =================================================================
 const allowedOrigins = [
   'https://leonex-materialhubfrontend.vercel.app', // Your Vercel frontend URL
   'http://localhost:5173' // Your local development URL
@@ -48,6 +52,7 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
+// =================================================================
 
 app.use((req, res, next) => {
   req.id = uuidv4();
@@ -96,7 +101,6 @@ cron.schedule("0 0 * * *", () => {
 
 // --- Error Handling ---
 app.use((req, res, next) => {
-  // SYNTAX FIX: Added backticks
   const error = new Error(`Not Found - ${req.originalUrl}`);
   error.status = 404;
   next(error);
@@ -104,9 +108,12 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
-  // SYNTAX FIX: Added backticks
   logger.error(`${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
   res.status(statusCode).json({ message: err.message || "Server error." });
 });
 
+// =================================================================
+// CRITICAL #2: VERCEL COMPATIBILITY
+// This exports the app for Vercel's serverless environment.
+// =================================================================
 module.exports = app;
