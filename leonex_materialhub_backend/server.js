@@ -25,18 +25,21 @@ const reportRoutes = require("./routes/reports");
 const stockReportRoutes = require('./routes/stockReportRoutes');
 
 const app = express();
+
+// CRITICAL FIX #1: Trust Proxy for Vercel's environment
+// This tells Express to trust the headers Vercel adds, which fixes the rate-limiter warning.
+app.set('trust proxy', 1);
+
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // --- Security and Core Middlewares ---
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// =================================================================
-// CRITICAL #1: CORRECT CORS CONFIGURATION
-// This allows your frontend to make requests to this backend.
-// =================================================================
+// CRITICAL FIX #2: Specific CORS Configuration for Production
+// This explicitly allows your frontend to make requests to this backend, solving the CORS error.
 const allowedOrigins = [
   'https://leonex-materialhubfrontend.vercel.app', // Your Vercel frontend URL
-  'http://localhost:5173' // Your local development URL
+  'http://localhost:5173' // Your local development URL (adjust port if needed)
 ];
 
 const corsOptions = {
@@ -52,7 +55,6 @@ const corsOptions = {
   optionsSuccessStatus: 204,
 };
 app.use(cors(corsOptions));
-// =================================================================
 
 app.use((req, res, next) => {
   req.id = uuidv4();
@@ -66,12 +68,15 @@ app.use(morgan(morganFormat, { stream: logger.stream }));
 app.use(express.json({ limit: "70mb" }));
 app.use(express.urlencoded({ extended: true, limit: "70mb" }));
 
-const mediaDir = path.join("/tmp", "media");
+// CRITICAL FIX #3: Use Vercel's Writable Directory
+// Vercel's file system is read-only, except for the /tmp directory.
+const mediaDir = path.join("/tmp", "media"); 
 if (!fs.existsSync(mediaDir)) {
   fs.mkdirSync(mediaDir, { recursive: true });
 }
 app.use("/media", express.static(mediaDir));
 
+// --- Rate Limiting (Applied only to API routes) ---
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 200,
@@ -95,6 +100,9 @@ app.use("/api/stock-report", stockReportRoutes);
 app.get("/", (req, res) => res.status(200).json({ message: "Backend is running." }));
 app.get("/api/health", (req, res) => res.status(200).json({ status: "UP" }));
 
+// --- Scheduled Jobs ---
+// Note: node-cron may not work reliably on Vercel's Hobby plan for long-running jobs.
+// For production, consider using Vercel's official Cron Jobs feature.
 cron.schedule("0 0 * * *", () => {
   deactivateExpiredUsers();
 });
@@ -108,12 +116,19 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
-  logger.error(`${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+  logger.error(
+    `[${req.id}] ${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`,
+    {
+      requestId: req.id,
+      timestamp: new Date().toISOString(),
+      stack: NODE_ENV !== "production" ? err.stack : undefined,
+    }
+  );
   res.status(statusCode).json({ message: err.message || "Server error." });
 });
 
-// =================================================================
-// CRITICAL #2: VERCEL COMPATIBILITY
-// This exports the app for Vercel's serverless environment.
-// =================================================================
+// CRITICAL FIX #4: Vercel Compatibility
+// Instead of starting a server with `app.listen`, we export the configured `app`
+// for Vercel's serverless environment to use. The entire `app.listen` and
+// graceful shutdown logic has been removed.
 module.exports = app;
