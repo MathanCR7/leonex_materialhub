@@ -152,31 +152,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-const server = app.listen(PORT, () => {
-  logger.info(
-    `Server running on http://localhost:${PORT} in ${NODE_ENV} mode.`
-  );
-  logger.info(`Media served from: ${mediaDir}`);
-  logger.info("User expiration check is scheduled to run daily at midnight.");
-});
-
-// --- Graceful Shutdown & Unhandled Error Logging ---
-const cleanup = (signal) => {
-  logger.warn(`Received ${signal}. Cleaning up and shutting down gracefully.`);
-  server.close(() => {
-    logger.info("Server closed. Exiting process.");
-    process.exit(0);
-  });
-};
-
-process.on("SIGINT", () => cleanup("SIGINT"));
-process.on("SIGTERM", () => cleanup("SIGTERM"));
-
-process.on("unhandledRejection", (reason, promise) => {
-  logger.error("Unhandled Rejection at:", { promise, reason });
-});
-
-process.on("uncaughtException", (error) => {
-  logger.error("Uncaught Exception:", { error });
-  process.exit(1);
-});
+module.exports = app;
