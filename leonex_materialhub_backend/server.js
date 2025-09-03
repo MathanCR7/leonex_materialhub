@@ -36,7 +36,6 @@ app.use(helmet({ crossOriginResourcePolicy: false }));
 
 // CRITICAL FIX #1: Robust CORS Configuration
 // This logic works for both local dev (using your .env) and production (using Vercel env vars).
-// It will not crash if the origin doesn't match.
 const allowedOrigins = [
   process.env.CORS_ORIGIN,  // Reads from your .env or Vercel environment variables
   'http://localhost:5173'   // Hardcoded for convenience during local development
@@ -44,7 +43,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like Postman/curl) or if the origin is in our list
+    // Allow requests with no origin (like Postman/curl) or if the origin is in our allowed list
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -71,7 +70,7 @@ app.use(express.json({ limit: "70mb" }));
 app.use(express.urlencoded({ extended: true, limit: "70mb" }));
 
 // CRITICAL FIX #2: Use Vercel's Writable Temporary Directory
-// This will work on both your local machine and on Vercel.
+// This will use /tmp on production and a local /media folder during development.
 const mediaDir = path.join(NODE_ENV === 'production' ? '/tmp' : __dirname, "media");
 if (!fs.existsSync(mediaDir)) {
   fs.mkdirSync(mediaDir, { recursive: true });
@@ -88,6 +87,7 @@ const apiLimiter = rateLimit({
 app.use("/api/", apiLimiter);
 
 // --- API Routes ---
+// These are all correct
 app.use("/api/auth", authRoutes);
 app.use("/api/materials/master", masterMaterialRoutes);
 app.use("/api/material-data", submissionRoutes);
@@ -123,7 +123,17 @@ app.use((err, req, res, next) => {
 });
 
 // CRITICAL FIX #3: Vercel Compatibility
-// Instead of starting a server with `app.listen`, we export the configured `app`.
-// The `app.listen` block and graceful shutdown logic are removed as they are 
-// incompatible with Vercel's serverless environment.
-module.exports = app;
+// We only run the server listener `app.listen` if we are NOT in a Vercel environment.
+// For Vercel, we export the app.
+if (process.env.VERCEL_ENV === 'production') {
+  module.exports = app;
+} else {
+  const PORT = process.env.PORT || 5001;
+  const server = app.listen(PORT, () => {
+    logger.info(`Server running on http://localhost:${PORT} in ${NODE_ENV} mode.`);
+  });
+  
+  // Graceful shutdown for local development
+  process.on("SIGINT", () => server.close(() => process.exit(0)));
+  process.on("SIGTERM", () => server.close(() => process.exit(0)));
+}
