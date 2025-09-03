@@ -25,29 +25,31 @@ const reportRoutes = require("./routes/reports");
 const stockReportRoutes = require('./routes/stockReportRoutes');
 
 const app = express();
-
-// CRITICAL FIX #1: Trust Proxy for Vercel's environment
-// This tells Express to trust the headers Vercel adds, which fixes the rate-limiter warning.
-app.set('trust proxy', 1);
-
 const NODE_ENV = process.env.NODE_ENV || "development";
 
 // --- Security and Core Middlewares ---
+
+// CRITICAL FOR VERCEL: Trust the proxy to get correct IP for rate limiting
+app.set('trust proxy', 1);
+
 app.use(helmet({ crossOriginResourcePolicy: false }));
 
-// CRITICAL FIX #2: Specific CORS Configuration for Production
-// This explicitly allows your frontend to make requests to this backend, solving the CORS error.
+// CRITICAL FIX #1: Robust CORS Configuration
+// This logic works for both local dev (using your .env) and production (using Vercel env vars).
+// It will not crash if the origin doesn't match.
 const allowedOrigins = [
-  'https://leonex-materialhubfrontend.vercel.app', // Your Vercel frontend URL
-  'http://localhost:5173' // Your local development URL (adjust port if needed)
+  process.env.CORS_ORIGIN,  // Reads from your .env or Vercel environment variables
+  'http://localhost:5173'   // Hardcoded for convenience during local development
 ];
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like Postman/curl) or if the origin is in our list
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Gracefully reject if origin is not in the allowed list
+      callback(new Error(`Origin ${origin} is not allowed by CORS`));
     }
   },
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -68,9 +70,9 @@ app.use(morgan(morganFormat, { stream: logger.stream }));
 app.use(express.json({ limit: "70mb" }));
 app.use(express.urlencoded({ extended: true, limit: "70mb" }));
 
-// CRITICAL FIX #3: Use Vercel's Writable Directory
-// Vercel's file system is read-only, except for the /tmp directory.
-const mediaDir = path.join("/tmp", "media"); 
+// CRITICAL FIX #2: Use Vercel's Writable Temporary Directory
+// This will work on both your local machine and on Vercel.
+const mediaDir = path.join(NODE_ENV === 'production' ? '/tmp' : __dirname, "media");
 if (!fs.existsSync(mediaDir)) {
   fs.mkdirSync(mediaDir, { recursive: true });
 }
@@ -100,9 +102,7 @@ app.use("/api/stock-report", stockReportRoutes);
 app.get("/", (req, res) => res.status(200).json({ message: "Backend is running." }));
 app.get("/api/health", (req, res) => res.status(200).json({ status: "UP" }));
 
-// --- Scheduled Jobs ---
-// Note: node-cron may not work reliably on Vercel's Hobby plan for long-running jobs.
-// For production, consider using Vercel's official Cron Jobs feature.
+// --- Scheduled Jobs (Note: Vercel Cron Jobs are recommended for production) ---
 cron.schedule("0 0 * * *", () => {
   deactivateExpiredUsers();
 });
@@ -115,20 +115,15 @@ app.use((req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
-  const statusCode = err.status || 500;
+  const statusCode = err.message.includes('CORS') ? 403 : (err.status || 500);
   logger.error(
-    `[${req.id}] ${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`,
-    {
-      requestId: req.id,
-      timestamp: new Date().toISOString(),
-      stack: NODE_ENV !== "production" ? err.stack : undefined,
-    }
+    `[${req.id}] ${statusCode} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
   );
   res.status(statusCode).json({ message: err.message || "Server error." });
 });
 
-// CRITICAL FIX #4: Vercel Compatibility
-// Instead of starting a server with `app.listen`, we export the configured `app`
-// for Vercel's serverless environment to use. The entire `app.listen` and
-// graceful shutdown logic has been removed.
+// CRITICAL FIX #3: Vercel Compatibility
+// Instead of starting a server with `app.listen`, we export the configured `app`.
+// The `app.listen` block and graceful shutdown logic are removed as they are 
+// incompatible with Vercel's serverless environment.
 module.exports = app;
