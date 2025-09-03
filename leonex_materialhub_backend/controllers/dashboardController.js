@@ -63,14 +63,12 @@ exports.getStats = async (req, res) => {
   }
 
   // --- CASE 2 & 3: ADMIN, CATALOGUER, AND SPECIAL ITC USERS ---
-  // The logic for these is similar enough to be combined.
   let plantFilterClauses = {
       materials: "",
       submissions: "",
   };
   let queryParams = [];
   
-  // Use user's assigned plants for filtering if they are a cataloguer or a special ITC user
   if (user.role === "cataloguer" || ['itc_user1', 'itc_user2'].includes(user.username)) {
     if (user.plants && user.plants.length > 0) {
       const plantCodes = user.plants.map((p) => p.plantcode);
@@ -78,51 +76,60 @@ exports.getStats = async (req, res) => {
       plantFilterClauses.submissions = " WHERE plant IN (?)";
       queryParams.push(plantCodes);
     } else {
-       // Return zero for all stats if user has no plants assigned
+      // Return empty stats if a non-admin user has no assigned plants
       return res.json({
-        totalMasterMaterials: 0, completedSubmissions: 0, pendingVerifications: 0,
-        totalPlants: 0, totalCategories: 0, totalStockOnHand: 0, recentlyAddedMasterMaterials: [],
-        approvedCount: 0, pendingCount: 0, reworkRequested: 0, reworkCompleted: 0,
-        thirdPartyReworks: 0, thirdPartyRejections: 0, statusDistribution: [],
-        userActivity: [], submissionsOverTime: [],
+        totalMasterMaterials: 0, completedSubmissions: 0, pendingVerifications: 0, totalPlants: 0, totalCategories: 0, totalStockOnHand: 0, recentlyAddedMasterMaterials: [],
+        approvedCount: 0, pendingCount: 0, reworkRequested: 0, reworkCompleted: 0, thirdPartyReworks: 0, thirdPartyRejections: 0, statusDistribution: [],
+        userActivity: [], submissionsOverTime: [], userAssignments: [], plantDirectory: [], submissionsByUserOverTime: [], submissionsByPlant: [], thirdPartyEstimations: []
       });
     }
   }
 
-  // --- Setup all queries ---
   const materialsQuery = `SELECT COUNT(*) as count FROM materials ${plantFilterClauses.materials}`;
   const recentMaterialsQuery = `SELECT material_code, material_description, plantcode, plantlocation, category, stock_on_hand, created_at FROM materials ${plantFilterClauses.materials} ORDER BY created_at DESC LIMIT 5`;
-  
-  // Submission queries use a slightly different where clause structure
   const submissionBaseWhere = plantFilterClauses.submissions ? `${plantFilterClauses.submissions} AND is_completed = TRUE` : `WHERE is_completed = TRUE`;
-
   const submissionsCountQuery = `SELECT COUNT(DISTINCT material_code) as count FROM material_data_submissions ${submissionBaseWhere}`;
   const statusDistributionQuery = `SELECT COALESCE(approval_status, 'PENDING') as status, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} GROUP BY status`;
   const userActivityQuery = `SELECT submitted_by_username as username, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} AND submitted_by_username IS NOT NULL GROUP BY submitted_by_username ORDER BY count DESC LIMIT 5`;
   const submissionsOverTimeQuery = `SELECT DATE(created_at) as date, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) GROUP BY DATE(created_at) ORDER BY DATE(created_at) ASC`;
-  
-  // Admin-only queries
   const thirdPartyReworksQuery = `SELECT COUNT(id) as count FROM cost_estimations WHERE estimation_type = 'REWORK_REQUESTED'`;
   const thirdPartyRejectionsQuery = `SELECT COUNT(id) as count FROM cost_estimations WHERE estimation_type = 'REJECTED'`;
   const totalPlantsQuery = `SELECT COUNT(DISTINCT plantlocation) as count FROM materials WHERE plantlocation IS NOT NULL AND plantlocation <> '' ${plantFilterClauses.materials.replace('WHERE', 'AND')}`;
   const totalCategoriesQuery = `SELECT COUNT(DISTINCT category) as count FROM materials WHERE category IS NOT NULL AND category <> '' ${plantFilterClauses.materials.replace('WHERE', 'AND')}`;
   const totalSohQuery = `SELECT SUM(stock_on_hand) as sum FROM materials ${plantFilterClauses.materials}`;
   
+  const userAssignmentsQuery = `
+    SELECT u.id, u.username, u.role, GROUP_CONCAT(DISTINCT up.plantcode SEPARATOR ', ') as plants 
+    FROM users u 
+    LEFT JOIN user_plants up ON u.id = up.user_id 
+    GROUP BY u.id 
+    ORDER BY u.username;
+  `;
+  const plantDirectoryQuery = `SELECT DISTINCT plantcode, plantlocation FROM user_plants ORDER BY plantcode;`;
+
+  // --- NEW QUERIES FOR ADMIN DASHBOARD ---
+  const submissionsByUserOverTimeQuery = `SELECT DATE(created_at) as date, submitted_by_username as username, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND submitted_by_username IS NOT NULL GROUP BY DATE(created_at), submitted_by_username ORDER BY date ASC`;
+  const submissionsByPlantQuery = `SELECT plant, COUNT(id) as count FROM material_data_submissions ${submissionBaseWhere} GROUP BY plant ORDER BY count DESC LIMIT 10`;
+  const thirdPartyEstimationsQuery = `SELECT u.username, COUNT(ce.id) as count FROM cost_estimations ce JOIN users u ON ce.user_id = u.id WHERE u.role = 'thirdparties' GROUP BY u.username ORDER BY count DESC LIMIT 10`;
+
   try {
     const queriesToRun = [
-      pool.query(materialsQuery, queryParams),
-      pool.query(submissionsCountQuery, queryParams),
-      pool.query(recentMaterialsQuery, queryParams),
-      pool.query(statusDistributionQuery, queryParams),
-      pool.query(userActivityQuery, queryParams),
-      pool.query(submissionsOverTimeQuery, queryParams),
-      pool.query(totalPlantsQuery, queryParams),
-      pool.query(totalCategoriesQuery, queryParams),
-      pool.query(totalSohQuery, queryParams),
+      pool.query(materialsQuery, queryParams), pool.query(submissionsCountQuery, queryParams), pool.query(recentMaterialsQuery, queryParams),
+      pool.query(statusDistributionQuery, queryParams), pool.query(userActivityQuery, queryParams), pool.query(submissionsOverTimeQuery, queryParams),
+      pool.query(totalPlantsQuery, queryParams), pool.query(totalCategoriesQuery, queryParams), pool.query(totalSohQuery, queryParams),
     ];
 
     if (user.role === 'admin') {
-      queriesToRun.push(pool.query(thirdPartyReworksQuery), pool.query(thirdPartyRejectionsQuery));
+      queriesToRun.push(
+        pool.query(thirdPartyReworksQuery), 
+        pool.query(thirdPartyRejectionsQuery),
+        pool.query(userAssignmentsQuery),
+        pool.query(plantDirectoryQuery),
+        // Add new queries
+        pool.query(submissionsByUserOverTimeQuery, queryParams),
+        pool.query(submissionsByPlantQuery, queryParams),
+        pool.query(thirdPartyEstimationsQuery)
+      );
     }
     
     const results = await Promise.all(queriesToRun);
@@ -137,10 +144,17 @@ exports.getStats = async (req, res) => {
     const [[totalCategoriesResult]] = results[7];
     const [[totalSohResult]] = results[8];
 
-    let thirdPartyReworks = 0, thirdPartyRejections = 0;
+    let thirdPartyReworks = 0, thirdPartyRejections = 0, userAssignments = [], plantDirectory = [],
+        submissionsByUserOverTime = [], submissionsByPlant = [], thirdPartyEstimations = [];
     if (user.role === 'admin') {
       const [[tpReworks]] = results[9];
       const [[tpRejections]] = results[10];
+      [userAssignments] = results[11];
+      [plantDirectory] = results[12];
+      // Get results of new queries
+      [submissionsByUserOverTime] = results[13];
+      [submissionsByPlant] = results[14];
+      [thirdPartyEstimations] = results[15];
       thirdPartyReworks = tpReworks.count;
       thirdPartyRejections = tpRejections.count;
     }
@@ -173,6 +187,12 @@ exports.getStats = async (req, res) => {
       userActivity: userActivityResult,
       submissionsOverTime,
       recentlyAddedMasterMaterials: recentlyAddedMasterMaterialsResult,
+      userAssignments,
+      plantDirectory,
+      // Add new data to response
+      submissionsByUserOverTime,
+      submissionsByPlant,
+      thirdPartyEstimations,
     });
   } catch (error) {
     console.error("Dashboard stats error:", error);

@@ -80,7 +80,16 @@ export const getCompletedSubmissions = (params) =>
 export const getSubmissionDetailsById = (submissionId) =>
   apiClient.get(`/material-data/${submissionId}`);
 
-export const getDashboardStats = () => apiClient.get("/dashboard/stats");
+
+
+export const getDashboardStats = (queryString = '') => {
+  return apiClient.get(`/dashboard/stats?${queryString}`);
+};
+
+// Add this new function
+export const getDashboardFilterOptions = () => {
+  return apiClient.get('/dashboard/filters');
+};
 
 export const getAllUsers = () => apiClient.get("/users");
 export const createUser = (userData) => apiClient.post("/users", userData);

@@ -1,31 +1,20 @@
-// src/pages/_DashboardPage.scss
 @use "../scss/utils/variables" as var;
 @use "../scss/utils/mixins" as mix;
 
 /* ==========================================================================
    Base & Common Dashboard Styles
    ========================================================================== */
-
 .dashboard-page, .dashboard-professional {
-  padding: var.$spacer-5;
-  background-color: var.$bg-color;
+  padding: var.$spacer-4 var.$spacer-5;
+  background-color: var.$surface-light;
   min-height: calc(100vh - var.$header-height);
   animation: fadeIn 0.4s ease-out;
 }
 
 .page-header, .professional-header {
   margin-bottom: var.$spacer-5;
-  h1 { 
-    font-size: 1.8rem; 
-    font-weight: var.$font-weight-bold; 
-    color: var.$text-primary; 
-    margin: 0 0 var.$spacer-1 0; 
-  }
-  .page-subtitle, p { 
-    color: var.$text-secondary; 
-    font-size: var.$font-size-base; 
-    margin: 0; 
-  }
+  h1 { font-size: 1.8rem; font-weight: var.$font-weight-bold; color: var.$text-primary; margin: 0 0 var.$spacer-1 0; }
+  .page-subtitle, p { color: var.$text-secondary; font-size: var.$font-size-base; margin: 0; }
 }
 
 .stats-grid {
@@ -35,94 +24,214 @@
 }
 
 .stat-card-value small.percentage-badge {
-    font-size: 0.9rem;
-    font-weight: 500;
-    opacity: 0.9;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
-    border-radius: 5px;
-    display: inline-block;
-    vertical-align: middle;
-    margin-left: 8px;
+    font-size: 0.8rem; font-weight: 500; opacity: 0.9;
+    background: rgba(255, 255, 255, 0.2); padding: 2px 8px;
+    border-radius: 5px; display: inline-block; vertical-align: middle; margin-left: 8px;
 }
 
 /* ==========================================================================
-   Unified Dashboard Card (for Charts, Lists, etc.)
+   Unified Dashboard Card
    ========================================================================== */
-
 .dashboard-card {
   background-color: var.$surface-color;
   border-radius: var.$border-radius-lg;
-  box-shadow: var.$box-shadow;
+  box-shadow: var.$box-shadow-sm;
   border: 1px solid var.$border-color-light;
   padding: var.$spacer-5;
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
-  min-width: 0; 
+  min-width: 0;
 
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: var.$box-shadow-lg;
-  }
+  &:hover { transform: translateY(-3px); box-shadow: var.$box-shadow; }
 }
 
 .dashboard-card-header {
-  display: flex;
-  justify-content: space-between;
+  display: flex; 
+  justify-content: space-between; 
   align-items: flex-start;
-  margin-bottom: var.$spacer-5;
+  margin-bottom: var.$spacer-5; 
   flex-shrink: 0;
-  
-  .header-content {
+  gap: var.$spacer-3;
+
+  .header-title-row {
     @include mix.flex-center(flex-start);
     gap: var.$spacer-3;
   }
-
-  .header-icon {
-    color: var.$primary;
-    font-size: 1.2rem;
+  
+  .header-icon-wrapper { color: var.$primary; font-size: 1.2rem; }
+  h3 { font-size: 1.1rem; margin: 0; color: var.$text-primary; font-weight: var.$font-weight-semibold; }
+  .header-subtitle { 
+    color: var.$text-muted; 
+    font-size: var.$font-size-sm; 
+    margin-top: var.$spacer-1;
   }
-
-  h3 {
-    font-size: 1.1rem;
-    margin: 0;
-    color: var.$text-primary;
-    font-weight: var.$font-weight-semibold;
-  }
-
-  .header-subtitle {
-    color: var.$text-muted;
-    font-size: var.$font-size-sm;
+  .header-count-badge {
+    background-color: var.$primary-light;
+    color: var.$primary-dark;
+    padding: var.$spacer-1 var.$spacer-2;
+    font-size: var.$font-size-xs;
+    font-weight: var.$font-weight-bold;
+    border-radius: var.$border-radius-pill;
+    line-height: 1;
+    flex-shrink: 0;
   }
 }
 
 .dashboard-card-body {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+  flex-grow: 1; display: flex; flex-direction: column;
 }
 
 /* ==========================================================================
-   Standard Third-Party & ITC User Dashboard Layout
+   Standard Third-Party & ITC User Dashboard
    ========================================================================== */
-
 .dashboard-layout {
-  display: flex;
-  flex-direction: column;
-  gap: var.$spacer-5;
+  display: flex; flex-direction: column; gap: var.$spacer-5;
 }
 
 .charts-container {
+  display: grid; gap: var.$spacer-5; grid-template-columns: 1fr;
+  @include mix.screen-breakpoint(lg) { grid-template-columns: 1fr 1fr; }
+  .chart-card .dashboard-card-body { min-height: 350px; }
+}
+
+/* ==========================================================================
+   Professional Dashboard (Admin & Cataloguer) - NEW LAYOUT
+   ========================================================================== */
+.professional-grid {
   display: grid;
-  gap: var.$spacer-5;
   grid-template-columns: 1fr;
-  @include mix.screen-breakpoint(xl) { 
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); 
+  gap: var.$spacer-4; // Reduced gap for a tighter, professional look
+  
+  // On large screens, activate the 12-column grid system
+  @include mix.screen-breakpoint(lg) {
+    grid-template-columns: repeat(12, 1fr);
+    
+    // All top-level cards in the grid should have their grid-column set
+    .stats-grid-professional,
+    .donut-chart-card,
+    .user-activity-card,
+    .area-chart-card,
+    .recent-materials-card,
+    .plant-directory-card,
+    .user-assignments-card,
+    .third-party-actions-card {
+       grid-column: 1 / -1; // Default to full-width
+    }
+    
+    // --- Layout for ADMIN role ---
+    &.professional-grid-admin {
+      .donut-chart-card       { grid-column: span 4; }
+      .user-activity-card     { grid-column: span 4; }
+      .area-chart-card        { grid-column: span 4; }
+      
+      .recent-materials-card  { grid-column: span 4; }
+      .plant-directory-card   { grid-column: span 4; }
+      .user-assignments-card  { grid-column: span 4; }
+    }
+    
+    // --- Layout for CATALOGUER role (adapts gracefully) ---
+    &.professional-grid-cataloguer {
+      .donut-chart-card { grid-column: span 5; }
+      .area-chart-card { grid-column: span 7; }
+      // The recent-materials-card will remain full-width by default, creating a clean layout
+    }
   }
-  .chart-card .dashboard-card-body {
-    min-height: 350px;
+}
+
+.stats-grid-professional {
+  display: grid; gap: var.$spacer-4;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  @include mix.screen-breakpoint(lg) {
+    &.stats-grid-admin { grid-template-columns: repeat(6, 1fr); }
+    &.stats-grid-cataloguer { grid-template-columns: repeat(5, 1fr); }
   }
+  .stat-card.compact { padding: 1.2rem; gap: 0.75rem; }
+}
+
+/* Scrollable List Styling (used across multiple cards) */
+.scrollable-list {
+  list-style: none; padding: 0; margin: 0;
+  max-height: 300px; overflow-y: auto;
+  padding-right: var.$spacer-2;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: var.$surface-light; border-radius: 10px; }
+  &::-webkit-scrollbar-thumb { 
+    background: var.$border-color; 
+    border-radius: 10px; 
+    &:hover { background: var.$secondary; } 
+  }
+  
+  li {
+    padding: var.$spacer-3; border-bottom: 1px solid var.$border-color-light;
+    transition: background-color 150ms ease-in-out;
+    &:last-child { border-bottom: none; }
+    &:hover { background-color: var.$surface-light; }
+    &.list-empty-state { @include mix.flex-center; gap: var.$spacer-2; color: var.$text-muted; font-style: italic; }
+  }
+}
+
+/* Specific Card Styles */
+.recent-materials-card {
+  .recent-material-header { font-weight: var.$font-weight-medium; color: var.$primary; strong { color: var.$text-primary; } }
+  .recent-material-details { font-size: var.$font-size-sm; color: var.$text-secondary; display: flex; flex-wrap: wrap; gap: var.$spacer-2 var.$spacer-4; margin-top: var.$spacer-2; span { @include mix.flex-center(flex-start); gap: var.$spacer-2; } }
+}
+
+.donut-chart-card .dashboard-card-body {
+  flex-direction: column; gap: var.$spacer-5;
+  .recharts-responsive-container { min-height: 200px; }
+  .donut-legend {
+    display: flex; flex-direction: column; gap: var.$spacer-3;
+    .legend-item { @include mix.flex-center(flex-start); gap: var.$spacer-3;
+      .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+      span { color: var.$text-secondary; }
+      .value { margin-left: auto; font-weight: var.$font-weight-semibold; color: var.$text-primary; }
+    }
+  }
+}
+
+.user-activity-card {
+  .recharts-text.recharts-label { font-size: var.$font-size-sm; fill: var.$text-secondary; }
+}
+
+.third-party-actions-card .dashboard-card-body {
+  display: grid; grid-template-columns: 1fr; gap: var.$spacer-4;
+  @include mix.screen-breakpoint(sm) { grid-template-columns: repeat(2, 1fr); }
+  .action-item {
+    @include mix.flex-center(flex-start); gap: var.$spacer-4; background-color: var.$surface-light;
+    padding: var.$spacer-4; border-radius: var.$border-radius; border-left: 4px solid;
+    cursor: pointer; transition: all 0.2s ease;
+    &:hover { transform: translateY(-3px); box-shadow: var.$box-shadow-sm; }
+    .icon { font-size: 2rem; }
+    &.purple { border-color: #6f42c1; .icon { color: #6f42c1; } }
+    &.orange { border-color: #fd7e14; .icon { color: #fd7e14; } }
+    .details {
+        span { font-size: var.$font-size-sm; color: var.$text-secondary; }
+        strong { font-size: 1.8rem; color: var.$text-primary; display: block; }
+    }
+  }
+}
+
+/* User & Plant List Styles */
+.list-card .dashboard-card-body { padding: 0; }
+.list-item-main { @include mix.flex-center(space-between); }
+.list-item-sub { @include mix.flex-center(flex-start); gap: var.$spacer-2; color: var.$text-secondary; font-size: var.$font-size-sm; margin-top: var.$spacer-1; }
+
+.user-list .username { font-weight: var.$font-weight-medium; color: var.$text-primary; }
+
+.plant-code { 
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; 
+  font-weight: var.$font-weight-medium; 
+  color: var.$text-primary; 
+}
+
+.role-tag {
+  @include mix.flex-center; gap: var.$spacer-2;
+  font-size: 0.75rem; font-weight: var.$font-weight-semibold;
+  padding: 4px 8px; border-radius: var.$border-radius-pill;
+  &.role-admin { background-color: rgba(255, 59, 48, 0.1); color: var.$danger; }
+  &.role-cataloguer { background-color: rgba(0, 122, 255, 0.1); color: var.$primary; }
+  &.role-thirdparty { background-color: rgba(255, 149, 0, 0.1); color: var.$warning; }
 }
 
 .welcome-card {
@@ -139,212 +248,85 @@
   p { max-width: 50ch; color: var.$text-secondary; }
 }
 
-.recent-materials-card ul {
-  list-style: none; padding: 0; margin: 0;
-  li {
-    display: flex;
-    flex-direction: column;
-    gap: var.$spacer-2;
-    padding: var.$spacer-3 0;
-    border-bottom: 1px solid var.$border-color-light;
-    transition: background-color 150ms ease-in-out;
-    padding-left: var.$spacer-3;
-    border-left: 3px solid transparent;
-    &:last-child { border-bottom: none; padding-bottom: 0; }
-    &:hover { background-color: var.$surface-light; border-left-color: var.$primary; }
-    .recent-material-header { font-weight: var.$font-weight-medium; color: var.$primary; strong { color: var.$text-primary; } }
-    .recent-material-details { font-size: var.$font-size-sm; color: var.$text-secondary; display: flex; flex-wrap: wrap; gap: var.$spacer-3 var.$spacer-4; span { @include mix.flex-center($justify: flex-start); gap: var.$spacer-2; } }
+.dashboard-filter-controls {
+  margin-bottom: var.$spacer-4;
+  .filter-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    -webkit-user-select: none;
+    user-select: none;
+    gap: var.$spacer-3;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .label-text {
+      font-weight: var.$font-weight-medium;
+      color: var.$text-secondary;
+      @include mix.flex-center;
+      gap: var.$spacer-2;
+    }
+
+    .slider {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background-color: var.$border-color;
+      border-radius: var.$border-radius-pill;
+      transition: background-color 0.2s;
+      
+      &::before {
+        content: "";
+        position: absolute;
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+    }
+
+    input:checked + .slider {
+      background-color: var.$primary;
+    }
+
+    input:checked + .slider::before {
+      transform: translateX(20px);
+    }
+     input:checked ~ .label-text {
+      color: var.$text-primary;
+    }
   }
 }
+
 
 /* ==========================================================================
-   Professional Dashboard (Admin & Cataloguer)
+   Professional Dashboard Grid Updates
    ========================================================================== */
-
 .professional-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var.$spacer-5;
-  
-  @include mix.screen-breakpoint(sm) { grid-template-columns: repeat(2, 1fr); }
-  @include mix.screen-breakpoint(md) { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-  
-  @include mix.screen-breakpoint(xl) {
-    grid-template-columns: repeat(10, 1fr);
-    .stats-grid-professional {
-      grid-column: 1 / -1; 
-    }
-    .donut-chart-card { grid-column: 1 / 7; }
-    .area-chart-card { grid-column: 7 / 11; }
-    .user-activity-card { grid-column: 1 / 7; }
-    .recent-items-card { grid-column: 7 / 11; }
-    .third-party-actions-card { grid-column: 1 / 11; }
-  }
-}
-
-.stats-grid-professional {
-  display: grid;
-  gap: var.$spacer-4;
-  
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-
   @include mix.screen-breakpoint(lg) {
-    &.stats-grid-admin {
-      grid-template-columns: repeat(6, 1fr);
-    }
-    &.stats-grid-cataloguer {
-      grid-template-columns: repeat(5, 1fr);
-    }
-  }
-
-  &.stats-grid-admin .stat-card.compact {
-    padding: 1rem;
-    gap: 0.75rem;
-  }
-  &.stats-grid-cataloguer .stat-card.compact {
-    padding: 1.5rem;
-    gap: 0.75rem;
-  }
-}
-
-/* Specific Card Styles */
-.donut-chart-card .dashboard-card-body {
-  flex-direction: column;
-  gap: var.$spacer-5;
-
-  @include mix.screen-breakpoint(md) { 
-    flex-direction: row; 
-    align-items: center; 
-  }
-
-  .recharts-responsive-container { flex-basis: 60%; min-height: 200px; }
-  .donut-legend {
-    flex-basis: 40%; display: flex; flex-direction: column; gap: var.$spacer-3;
-    .legend-item {
-      @include mix.flex-center(flex-start); gap: var.$spacer-3;
-      .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-      span { color: var.$text-secondary; }
-      .value { margin-left: auto; font-weight: var.$font-weight-semibold; color: var.$text-primary; }
-    }
-  }
-}
-
-.user-activity-card .dashboard-card-body {
-  gap: var.$spacer-4;
-}
-
-.activity-progress-bar {
-  .user-info { @include mix.flex-center(space-between); margin-bottom: var.$spacer-2; font-size: var.$font-size-sm;
-    span:first-child { color: var.$text-secondary; } span:last-child { font-weight: var.$font-weight-bold; color: var.$text-primary; }
-  }
-  .progress-track { height: 8px; background-color: var.$surface-light; border-radius: var.$border-radius-pill; overflow: hidden;
-    .progress-fill { height: 100%; border-radius: var.$border-radius-pill; transition: width 0.5s ease-out; }
-  }
-}
-
-// --- MODIFICATION START for .recent-items-card ---
-.recent-items-card .recent-list {
-  list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var.$spacer-4;
-  li {
-    @include mix.flex-center(flex-start); 
-    gap: var.$spacer-3; // Reduced gap
-
-    .item-icon { 
-      @include mix.flex-center; 
-      width: 36px; // Slightly smaller icon
-      height: 36px; 
-      background-color: var.$primary-light; 
-      color: var.$primary; 
-      border-radius: var.$border-radius; 
-      flex-shrink: 0; 
-      font-size: 1rem; // Smaller icon itself
-    }
-
-    .item-details { 
-      display: flex; 
-      flex-direction: column;
-      flex: 1; // Make this item take available space
-      min-width: 0; // The KEY FIX: Allows flex item to shrink below content size
-
-      strong { 
-        color: var.$text-primary; 
-        font-size: 0.9rem; // Reduced font size
-        word-break: break-all; // FIX: Force long unbreakable strings to wrap
-      }
-      span { 
-        font-size: 0.8rem; // Reduced font size 
-        color: var.$text-secondary;
-        white-space: nowrap; // Keep ellipsis effect
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-    }
-
-    .item-meta { 
-      margin-left: auto; 
-      text-align: right; 
-      flex-shrink: 0; 
-      display: flex; 
-      flex-direction: column;
-      padding-left: var.$spacer-2; // Add a little space
-
-      span { 
-        font-size: 0.8rem; // Reduced font size
-        color: var.$text-secondary; 
-      }
-      .stock { 
-        font-weight: var.$font-weight-semibold; 
-        color: var.$text-primary; 
-        font-size: 0.85rem; // Reduced font size
-      }
-    }
-
-    // Responsive adjustments for very small screens
-    @include mix.screen-breakpoint(xs) {
-      flex-wrap: wrap; // Allow items to wrap
+    &.professional-grid-admin {
+      // Existing cards in row 1
+      .donut-chart-card       { grid-column: span 4; }
+      .user-activity-card     { grid-column: span 4; }
+      .area-chart-card        { grid-column: span 4; }
       
-      .item-meta {
-        width: 100%; // Take full width
-        margin-left: 0; // Reset margin
-        padding-left: 0; // Reset padding
-        margin-top: var.$spacer-2; // Add space on top
-        padding-top: var.$spacer-2;
-        border-top: 1px solid var.$border-color-light;
-        flex-direction: row; // Display Plant and SOH side-by-side
-        justify-content: space-between; // Space them out
-        text-align: left;
-      }
-    }
-  }
-}
-// --- MODIFICATION END ---
-
-
-.third-party-actions-card .dashboard-card-body {
-  display: grid; grid-template-columns: 1fr; gap: var.$spacer-4;
-  @include mix.screen-breakpoint(sm) { grid-template-columns: repeat(2, 1fr); }
-
-  .action-item {
-    @include mix.flex-center(flex-start);
-    gap: var.$spacer-4;
-    background-color: var.$surface-light;
-    padding: var.$spacer-4;
-    border-radius: var.$border-radius;
-    border-left: 4px solid;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover { transform: translateY(-3px); box-shadow: var.$box-shadow; }
-    
-    .icon { font-size: 2rem; }
-    // NOTE: This is not standard SASS. This should be fixed if you have issues.
-    // Correct would be: &.purple {...} and &.orange {...}
-    &.purple { border-color: #6f42c1; .icon { color: #6f42c1; } }
-    &.orange { border-color: #fd7e14; .icon { color: #fd7e14; } }
-    
-    .details {
-        span { font-size: var.$font-size-sm; color: var.$text-secondary; }
-        strong { font-size: 1.8rem; color: var.$text-primary; display: block; }
+      // --- NEW --- cards in row 2
+      .user-submission-comparison-card { grid-column: span 4; }
+      .submissions-by-plant-card { grid-column: span 4; }
+      .third-party-costing-card { grid-column: span 4; }
+      
+      // Existing cards in row 3
+      .recent-materials-card  { grid-column: span 4; }
+      .plant-directory-card   { grid-column: span 4; }
+      .user-assignments-card  { grid-column: span 4; }
     }
   }
 }
